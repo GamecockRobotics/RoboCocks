@@ -1,3 +1,20 @@
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// leftChassis          motor         1               
+// rightChassis         motor         10              
+// Controller1          controller                    
+// ArmMotor1            motor         2               
+// ArmMotor2            motor         9               
+// ---- END VEXCODE CONFIGURED DEVICES ----
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// leftChassis          motor         1               
+// rightChassis         motor         10              
+// Controller1          controller                    
+// ArmMotor1            motor         2               
+// ---- END VEXCODE CONFIGURED DEVICES ----
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -16,6 +33,7 @@
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
+#include <string>
 
 using namespace vex;
 
@@ -35,12 +53,15 @@ competition Competition;
 /*---------------------------------------------------------------------------*/
 const double chassisWidth = 59/4;
 const double wheelDiameter = 4;
+const double MAX_DEG_ARM = 10000;
+const double MIN_DEG_ARM = 0;
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
+  Brain.Screen.clearScreen();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -80,6 +101,16 @@ void turn(turnType dir, int radius, double radians) {
 
 }
 
+void arm(directionType dir, double deg){
+  while(true){
+    ArmMotor1.spin(dir);
+    ArmMotor2.spin(dir);
+    /*if(){
+
+    }*/
+  }
+}
+
 
 void autonomous(void) {
   // ..........................................................................
@@ -106,6 +137,26 @@ void usercontrol(void) {
   while (true) {
     leftChassis.spin(forward, Controller1.Axis2.value(), percent);
     rightChassis.spin(forward, Controller1.Axis3.value(), percent);
+
+    Brain.Screen.print("\nArmMotor 1");
+    Brain.Screen.print(ArmMotor1.position(degrees));
+    Brain.Screen.print("\nArmMotor 2");
+    Brain.Screen.print(ArmMotor2.position(degrees));
+    Brain.Screen.print("\n");
+
+    if(Controller1.ButtonR1.pressing()){
+      ArmMotor1.spin(forward);
+      ArmMotor2.spin(forward);
+      //Brain.Screen.print("ArmMotor1 Value: " + std::to_string(ArmMotor1.rotation(rev)));
+    }
+    else if(Controller1.ButtonR2.pressing()){
+      ArmMotor1.spin(reverse);
+      ArmMotor2.spin(reverse);
+    }else{
+      ArmMotor1.stop(hold);
+      ArmMotor2.stop(hold);
+    } 
+
     // This is the main execution loop for the user control program.
     // Each time through the loop your program should update motor + servo
     // values based on feedback from the joysticks.
@@ -117,6 +168,7 @@ void usercontrol(void) {
 
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
+    //std::string temp ="suff" << 8;
   }
 }
 
