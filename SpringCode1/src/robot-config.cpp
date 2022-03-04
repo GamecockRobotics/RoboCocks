@@ -15,6 +15,10 @@ motor BackRightChassis1 = motor(PORT10, ratio18_1, false);
 motor BackRightChassis2 = motor(PORT9, ratio18_1, true);
 motor FrontRightChassis = motor(PORT8, ratio18_1, false);
 controller Controller1 = controller(primary);
+motor RightArm = motor(PORT1, ratio18_1, false);
+motor LeftArm = motor(PORT2, ratio18_1, true);
+motor BackClaw = motor(PORT3, ratio18_1, false);
+motor FrontClaw = motor(PORT4, ratio18_1, false);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

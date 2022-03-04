@@ -17,6 +17,10 @@
 // BackRightChassis2    motor         9               
 // FrontRightChassis    motor         8               
 // Controller1          controller                    
+// RightArm             motor         1               
+// LeftArm              motor         2               
+// BackClaw             motor         3               
+// FrontClaw            motor         4               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -84,12 +88,53 @@ void usercontrol(void) {
     // Insert user code here. This is where you use the joystick values to
     // update your motors, etc.
     // ........................................................................
+
+    /*
     BackLeftChassis1.spin(forward, Controller1.Axis3.value(), percent);
     BackLeftChassis2.spin(forward, Controller1.Axis3.value(), percent);
     FrontLeftChassis.spin(forward, Controller1.Axis3.value(), percent);
     BackRightChassis1.spin(forward, -Controller1.Axis2.value(), percent);
     BackRightChassis2.spin(forward, -Controller1.Axis2.value(), percent);
     FrontRightChassis.spin(forward, -Controller1.Axis2.value(), percent);
+    */
+    
+    BackLeftChassis1.spin(forward, Controller1.Axis1.value()+Controller1.Axis3.value(), percent);
+    BackLeftChassis2.spin(forward, Controller1.Axis1.value()+Controller1.Axis3.value(), percent);
+    FrontLeftChassis.spin(forward, Controller1.Axis1.value()+Controller1.Axis3.value(), percent);
+    BackRightChassis1.spin(forward, Controller1.Axis1.value()-Controller1.Axis3.value(), percent);
+    BackRightChassis2.spin(forward, Controller1.Axis1.value()-Controller1.Axis3.value(), percent);
+    FrontRightChassis.spin(forward, Controller1.Axis1.value()-Controller1.Axis3.value(), percent);
+
+    
+    if(Controller1.ButtonR1.pressing()){
+      RightArm.spin(forward);
+      LeftArm.spin(forward);
+    } else if (Controller1.ButtonR2.pressing()){
+      RightArm.spin(reverse);
+      LeftArm.spin(reverse);
+    } else {
+      RightArm.stop(hold);
+      LeftArm.stop(hold);
+    }
+
+    if(Controller1.ButtonL1.pressing()){
+      FrontClaw.spin(forward);
+    } else if (Controller1.ButtonL2.pressing()){
+      FrontClaw.spin(reverse);
+    } else {
+      FrontClaw.stop(hold);
+    }
+
+    if(Controller1.ButtonA.pressing()){
+      BackClaw.spin(forward);
+    } else if (Controller1.ButtonB.pressing()){
+      BackClaw.spin(reverse);
+    } else {
+      BackClaw.stop(hold);
+    }
+
+
+
 
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.

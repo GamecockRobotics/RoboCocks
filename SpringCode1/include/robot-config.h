@@ -10,6 +10,10 @@ extern motor BackRightChassis1;
 extern motor BackRightChassis2;
 extern motor FrontRightChassis;
 extern controller Controller1;
+extern motor RightArm;
+extern motor LeftArm;
+extern motor BackClaw;
+extern motor FrontClaw;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
