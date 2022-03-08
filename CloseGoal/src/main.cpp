@@ -57,6 +57,7 @@ void pre_auton(void) {
   ArmMotor2.resetPosition();
   LeftChassis.setVelocity(100,percent);
   RightChassis.setVelocity(100,percent);
+  
 }
 
 /*---------------------------------------------------------------------------*/
@@ -102,6 +103,7 @@ void fling() {
   
   ArmMotor1.setVelocity(100, percent);
   ArmMotor2.setVelocity(100, percent);
+
 }
 
 
@@ -143,6 +145,7 @@ void usercontrol(void) {
     LeftChassis1.spin(forward, Controller1.Axis2.value(), percent);
     RightChassis.spin(forward, Controller1.Axis3.value(), percent);
     RightChassis1.spin(forward, Controller1.Axis3.value(), percent);
+    LeftChassis.spi
 
     if(Controller1.ButtonR1.pressing()){
       ArmMotor1.spin(forward);
