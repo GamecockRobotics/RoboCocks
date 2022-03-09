@@ -78,19 +78,27 @@ void pre_auton(void) {
   RightChassis0.setVelocity(100, percent);
   RightChassis1.setVelocity(100, percent);
   RightChassis2.setVelocity(100, percent);
+  BackClaw.setVelocity(100, percent);
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
 }
 
-void driveForward(int dist) {
-  
+void driveForward(int dist, bool waiting = true) {
   LeftChassis0.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
   LeftChassis1.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
   LeftChassis2.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
   RightChassis0.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
   RightChassis1.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
-  RightChassis2.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, true);
+  RightChassis2.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, waiting);
+}
+
+void backGrab() {
+  BackClaw.spinFor(1, turns, false);
+}
+
+void backRelease() {
+  BackClaw.spinToPosition(0, degrees);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,8 +112,9 @@ void driveForward(int dist) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous() {
-  Brain.Screen.print("Running Auton");
-  driveForward(24);
+  driveForward(-21);
+  driveForward(-3, false);
+  backGrab();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -177,6 +186,7 @@ void frontClaw(bool close, bool open) {
     FrontClaw.stop(hold);
   }
 }
+bool firstTime = false;
 void backClaw(bool close, bool open) {
   if (close) {
     BackClaw.spin(forward, 80, percent);
@@ -199,8 +209,8 @@ void usercontrol(void) {
     moveArm(Controller1.ButtonLeft.pressing(),
             Controller1.ButtonDown.pressing());
     // Control for Front Claw
-    frontClaw(Controller1.ButtonL1.pressing(), 
-            Controller1.ButtonL2.pressing());
+    frontClaw(Controller1.ButtonL2.pressing(), 
+            Controller1.ButtonL1.pressing());
     // Control for Back Claw
     backClaw(Controller1.ButtonR1.pressing(), 
             Controller1.ButtonR2.pressing());
