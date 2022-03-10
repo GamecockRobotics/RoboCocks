@@ -20,6 +20,9 @@ motor RightChassis2 = motor(PORT17, ratio18_1, true);
 motor FrontClaw = motor(PORT2, ratio18_1, false);
 motor BackClaw = motor(PORT7, ratio18_1, false);
 motor Intake = motor(PORT9, ratio18_1, false);
+motor BackClaw2 = motor(PORT11, ratio18_1, false);
+inertial Gyro = inertial(PORT16);
+controller Controller2 = controller(partner);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

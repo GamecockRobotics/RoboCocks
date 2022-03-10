@@ -15,6 +15,9 @@ extern motor RightChassis2;
 extern motor FrontClaw;
 extern motor BackClaw;
 extern motor Intake;
+extern motor BackClaw2;
+extern inertial Gyro;
+extern controller Controller2;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

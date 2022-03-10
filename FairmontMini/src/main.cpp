@@ -8,7 +8,6 @@
 /*----------------------------------------------------------------------------*/
 
 #include "vex.h"
-#include "math.h"
 
 // ---- START VEXCODE CONFIGURED DEVICES ----
 // Robot Configuration:
@@ -25,6 +24,9 @@
 // FrontClaw            motor         2               
 // BackClaw             motor         7               
 // Intake               motor         9               
+// BackClaw2            motor         11              
+// Gyro                 inertial      16              
+// Controller2          controller                    
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 using namespace vex;
@@ -32,11 +34,9 @@ using namespace vex;
 // A global instance of competition
 competition Competition;
 
-// define your global instances of motors and other devices here
-enum intakeDirection { intake, outtake, stopped };
-intakeDirection intakeState = stopped;
 
-const int WHEEL_RADIUS = 2;
+intakeDirection intakeState = stopped;
+bool clawLimit = true;
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -48,30 +48,23 @@ const int WHEEL_RADIUS = 2;
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
 
+
+
+
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
 
-  BackClaw.resetPosition();
-  FrontClaw.resetPosition();
-  LeftArm.resetPosition();
-  RightArm.resetPosition();
-  LeftChassis0.resetPosition();
-  LeftChassis1.resetPosition();
-  LeftChassis2.resetPosition();
-  RightChassis0.resetPosition();
-  RightChassis1.resetPosition();
-  RightChassis2.resetPosition();
   BackClaw.setStopping(hold);
   FrontClaw.setStopping(hold);
   LeftArm.setStopping(brake);
   RightArm.setStopping(brake);
-  // RightChassis0.setStopping(hold);
-  // RightChassis1.setStopping(hold);
-  // RightChassis2.setStopping(hold);
-  // LeftChassis0.setStopping(hold);
-  // LeftChassis1.setStopping(hold);
-  // LeftChassis2.setStopping(hold);
+  RightChassis0.setStopping(coast);
+  RightChassis1.setStopping(coast);
+  RightChassis2.setStopping(coast);
+  LeftChassis0.setStopping(coast);
+  LeftChassis1.setStopping(coast);
+  LeftChassis2.setStopping(coast);
   LeftChassis0.setVelocity(100, percent);
   LeftChassis1.setVelocity(100, percent);
   LeftChassis2.setVelocity(100, percent);
@@ -79,26 +72,61 @@ void pre_auton(void) {
   RightChassis1.setVelocity(100, percent);
   RightChassis2.setVelocity(100, percent);
   BackClaw.setVelocity(100, percent);
+  BackClaw2.setVelocity(100, percent);
+  FrontClaw.setPosition(0, degrees);
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
 }
 
-void driveForward(int dist, bool waiting = true) {
-  LeftChassis0.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
-  LeftChassis1.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
-  LeftChassis2.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
-  RightChassis0.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
-  RightChassis1.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
-  RightChassis2.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, waiting);
+void driveForward(double dist, bool waiting) {
+  RightChassis0.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
+  LeftChassis0.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
+  RightChassis1.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
+  LeftChassis1.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
+  RightChassis2.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
+  LeftChassis2.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, waiting);
 }
 
 void backGrab() {
-  BackClaw.spinFor(1, turns, false);
+  BackClaw.spinFor(1.3, turns, false);
+  BackClaw2.spinFor(1.3, turns, true);
 }
 
-void backRelease() {
-  BackClaw.spinToPosition(0, degrees);
+void frontGrab() {
+  FrontClaw.setVelocity(100, percent);
+  FrontClaw.spinFor(1, turns, false);
+}
+
+void liftArm(bool waiting) {
+  LeftArm.spinFor(1, turns, false);
+  RightArm.spinFor(1, turns, waiting);
+}
+
+void chassisTurn (double deg, turnType dir) {
+  float error = deg;
+  float prevError = deg;
+  float totalError = 0;
+  const float threshold = 2.0;
+  const float kp = 0.50;
+  const float kd = 0.12;
+  const float ki = 0.00;
+  Gyro.setRotation(0, degrees);
+  while (fabs(error) > threshold ||fabs (prevError) > threshold) {
+    int speed = kp*error+kd*(prevError-error) + ki*totalError;
+    LeftChassis0.spin(dir == left?reverse:forward, speed, percent);
+    LeftChassis1.spin(dir == left?reverse:forward, speed, percent);
+    LeftChassis2.spin(dir == left?reverse:forward, speed, percent);
+    RightChassis0.spin(dir == right?reverse:forward, speed, percent);
+    RightChassis1.spin(dir == right?reverse:forward, speed, percent);
+    RightChassis2.spin(dir == right?reverse:forward, speed, percent);
+    wait(200, msec);
+    prevError = error;
+    error = deg - fabs(Gyro.rotation());
+    if (fabs(error) < 10) {
+      totalError = totalError + error;
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -112,9 +140,25 @@ void backRelease() {
 /*---------------------------------------------------------------------------*/
 
 void autonomous() {
-  driveForward(-21);
-  driveForward(-3, false);
+  /************Back up auton*************
+  // Drives backwards and grabs the first
+  // neutral goal with the back clamp
+  driveForward(-22.5);
+  driveForward(-4, false);
   backGrab();
+  driveForward(15);
+  **************************************/
+  //************Potential Auton***********
+  // Grabs the neutral mobile goal with
+  // the Front claw
+  driveForward(20);
+  driveForward(6, false);
+  frontGrab();
+  liftArm();
+  driveForward(-12);
+  chassisTurn(90, left);
+  driveForward(-8);
+  toggleIntake();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -127,7 +171,7 @@ void autonomous() {
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-void leftChassisSpin(int speed, brakeType type = coast) {
+void leftChassisSpin(int speed, brakeType type) {
   if (abs(speed) > 5) {
     LeftChassis0.spin(forward, speed, percent);
     LeftChassis1.spin(forward, speed, percent);
@@ -138,7 +182,7 @@ void leftChassisSpin(int speed, brakeType type = coast) {
     LeftChassis2.stop(type);
   }
 }
-void rightChassisSpin(int speed, brakeType type = coast) {
+void rightChassisSpin(int speed, brakeType type ) {
   if (abs(speed) > 5) {
     RightChassis0.spin(forward, speed, percent);
     RightChassis1.spin(forward, speed, percent);
@@ -149,11 +193,11 @@ void rightChassisSpin(int speed, brakeType type = coast) {
     RightChassis2.stop(type);
   }
 }
-void moveArm(bool up, bool down, int speed = 100, brakeType type = hold) {
-  if (Controller1.ButtonLeft.pressing()) {
+void moveArm(bool up, bool down, int speed, brakeType type) {
+  if (up) {
     LeftArm.spin(forward, speed, percent);
     RightArm.spin(forward, speed, percent);
-  } else if (Controller1.ButtonDown.pressing()) {
+  } else if (down) {
     LeftArm.spin(reverse, speed, percent);
     RightArm.spin(reverse, speed, percent);
   } else {
@@ -180,59 +224,55 @@ void toggleOuttake() {
 void frontClaw(bool close, bool open) {
   if (close) {
     FrontClaw.spin(forward, 80, percent);
-  } else if (open) {
+  } else if (open && (FrontClaw.position(degrees) >=0 || !clawLimit)) {
     FrontClaw.spin(reverse, 80, percent);
   } else {
     FrontClaw.stop(hold);
   }
 }
-bool firstTime = false;
 void backClaw(bool close, bool open) {
   if (close) {
     BackClaw.spin(forward, 80, percent);
+    BackClaw2.spin(forward, 80, percent);
   } else if (open) {
     BackClaw.spin(reverse, 80, percent);
+    BackClaw2.spin(reverse, 80, percent);
   } else {
     BackClaw.stop(hold);
+    BackClaw2.spin(reverse, 80, percent);
+  }
+}
+void p() {
+  Brain.Screen.print(Gyro.heading());
+  Brain.Screen.newLine();
+}
+
+void toggleLimit() {
+  clawLimit = !clawLimit;
+  if (clawLimit) {
+    FrontClaw.setPosition(0, degrees);
   }
 }
 
 void usercontrol(void) {
+  // Control for the Intake
+  Controller1.ButtonA.pressed(toggleIntake);
+  Controller1.ButtonB.pressed(toggleOuttake);
+  Controller1.ButtonX.pressed(toggleLimit);
   // User control code here, inside the loop
-  bool aPressed = false;
-  bool bPressed = false;
+
   while (true) {
     // Control for chassis
     leftChassisSpin(Controller1.Axis3.value());
     rightChassisSpin(Controller1.Axis2.value());
     // Control for Lift
+    // moveArm(true, false, Controller2.Axis3.value());
     moveArm(Controller1.ButtonLeft.pressing(),
             Controller1.ButtonDown.pressing());
     // Control for Front Claw
-    frontClaw(Controller1.ButtonL2.pressing(), 
-            Controller1.ButtonL1.pressing());
+    frontClaw(Controller1.ButtonL2.pressing(), Controller1.ButtonL1.pressing());
     // Control for Back Claw
-    backClaw(Controller1.ButtonR1.pressing(), 
-            Controller1.ButtonR2.pressing());
-
-    // Control for the Intake
-    if (Controller1.ButtonA.pressing()) {
-      if (!aPressed) {
-        toggleIntake();
-      }
-      aPressed = true;
-      bPressed = false;
-    } else if (Controller1.ButtonB.pressing()) {
-      if (!bPressed) {
-        toggleOuttake();
-      }
-      aPressed = false;
-      bPressed = true;
-    } else {
-      aPressed = false;
-      bPressed = false;
-    }
-
+    backClaw(Controller1.ButtonR1.pressing(), Controller1.ButtonR2.pressing());
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
