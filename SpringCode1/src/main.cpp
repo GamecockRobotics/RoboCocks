@@ -53,6 +53,8 @@ void pre_auton(void) {
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
+  DigitalOutF.set(true);
+  DigitalOutH.set(true);
 }
 
 void driveForward(int dist, bool waiting = true) {
@@ -62,6 +64,18 @@ void driveForward(int dist, bool waiting = true) {
   driveFrontRight.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
   driveMiddleRight.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, false);
   driveBackRight.spinFor(dist/WHEEL_RADIUS*M_1_PI, turns, waiting);
+}
+
+void backGrab(bool backClawState){
+  DigitalOutH.set(backClawState);
+}
+
+void frontGrab(bool frontClawState){
+  DigitalOutF.set(frontClawState);
+}
+
+void lift(bool dir, int dist){
+
 }
 
 void chassisTurn (double deg, turnType dir) {
@@ -103,6 +117,7 @@ void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
+  driveForward(22);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -197,7 +212,7 @@ void usercontrol(void) {
       DigitalOutH.set(false);
     }*/
 
-
+    //Claw
     Controller1.ButtonR1.pressed(frontClaw);
     Controller1.ButtonR2.pressed(backClaw);
     
