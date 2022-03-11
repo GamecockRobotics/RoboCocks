@@ -36,7 +36,7 @@ competition Competition;
 
 
 intakeDirection intakeState = stopped;
-bool clawLimit = true;
+bool clawLimit = false;
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -79,18 +79,25 @@ void pre_auton(void) {
   // Example: clearing encoders, setting servo positions, ...
 }
 
-void driveForward(double dist, bool waiting) {
-  RightChassis0.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
-  LeftChassis0.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
-  RightChassis1.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
-  LeftChassis1.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
-  RightChassis2.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
-  LeftChassis2.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, waiting);
+void driveForward(double dist, int speed, bool waiting) {
+  RightChassis0.setVelocity(speed, percent);
+  RightChassis1.setVelocity(speed, percent);
+  RightChassis2.setVelocity(speed, percent);
+  LeftChassis0.setVelocity(speed, percent);
+  LeftChassis1.setVelocity(speed, percent);
+  LeftChassis2.setVelocity(speed, percent);
+  RightChassis0.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
+  LeftChassis0.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
+  RightChassis1.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
+  LeftChassis1.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
+  RightChassis2.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
+  LeftChassis2.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, waiting);
 }
 
 void backGrab() {
-  BackClaw.spinFor(1.3, turns, false);
-  BackClaw2.spinFor(1.3, turns, true);
+  BackClaw.spinFor(1.2, turns, false);
+  BackClaw2.spinFor(1.2, turns, false);
+  wait(500, msec);
 }
 
 void backRelease() {
@@ -101,6 +108,7 @@ void backRelease() {
 void frontGrab() {
   FrontClaw.setVelocity(100, percent);
   FrontClaw.spinFor(1, turns, false);
+  wait(500, msec);
 }
 void frontRelease() {
   FrontClaw.setVelocity(100, percent);
@@ -114,16 +122,17 @@ void liftArm(bool waiting) {
 void lowerArm(bool waiting) {
   LeftArm.spinFor(-1, turns, false);
   RightArm.spinFor(-1, turns, waiting);
+  wait(1000, msec);
 }
 
-void chassisTurn (double deg, turnType dir) {
+void turnChassis (double deg, turnType dir) {
   float error = deg;
   float prevError = deg;
   float totalError = 0;
   const float threshold = 2.0;
   const float kp = 0.50;
   const float kd = 0.12;
-  const float ki = 0.00;
+  const float ki = 0.01;
   Gyro.setRotation(0, degrees);
   while (fabs(error) > threshold ||fabs (prevError) > threshold) {
     int speed = kp*error+kd*(prevError-error) + ki*totalError;
@@ -153,24 +162,31 @@ void chassisTurn (double deg, turnType dir) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous() {
+
+  //driveForward(120);
+  
   // Start in Corner facing towards middle goal
   // Drive forward and grab the middle mobile goal
-  driveForward(51);
+  driveForward(60);
+  driveForward(6, 10);
+  wait(200, msec);
   frontGrab();
+  liftArm();
   // Reverse to latitude of alliance goal
-  driveForward(-34);
+  driveForward(-42);
   // Turn to face Alliance goal and drop neutral goal in zone
   turnChassis(45, left);
+  lowerArm();
   frontRelease();
   // Grab alliance goal 
   driveForward(-12);
   backGrab();
   // Move to grab the neutral goal
-  driveForward(8);
+  driveForward(12);
   turnChassis(90, right);
-  driveForward(18);
-  // Grab mobile goal 
-  frontGrab();
+  toggleIntake();
+  driveForward(100);
+  /*
   driveForward(12);
   // Place alliance goal in corner
   turnChassis(150, left);
@@ -189,9 +205,7 @@ void autonomous() {
   turnChassis(90, right);
   lowerArm();
   lowerArm();
-  driveForward(20);
-
-
+  driveForward(20);*/
 }
 
 /*---------------------------------------------------------------------------*/
@@ -305,7 +319,7 @@ void usercontrol(void) {
     // Control for Front Claw
     frontClaw(Controller1.ButtonL2.pressing(), Controller1.ButtonL1.pressing());
     // Control for Back Claw
-    backClaw(Controller1.ButtonR1.pressing(), Controller1.ButtonR2.pressing());
+    backClaw(Controller1.ButtonR2.pressing(), Controller1.ButtonR1.pressing());
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
