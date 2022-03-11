@@ -74,8 +74,17 @@ void frontGrab(bool frontClawState){
   DigitalOutF.set(frontClawState);
 }
 
-void lift(bool dir, int dist){
-
+void lift(bool dir, float dist){
+  if(dir){
+    RightLift.spinFor(forward,dist,turns);
+    LeftLift.spinFor(forward,dist,turns);
+  }else if (dir == false){
+    RightLift.spinFor(reverse,dist,turns);
+    LeftLift.spinFor(reverse,dist,turns);
+  } else{
+    RightLift.stop(hold);
+    LeftLift.stop(hold);
+  }
 }
 
 void chassisTurn (double deg, turnType dir) {
@@ -117,7 +126,35 @@ void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
+  /*
+  driveForward(47);
+  frontGrab(true);
+  lift(true, 1);
+  driveForward(-47);*/
+
+  //Skills Do not delete
+  /*
+  frontGrab(false);
+  lift(true,1);
+
+  chassisTurn(90,left);
+  
+  driveForward(42);
+  chassisTurn(90,right);
+  driveForward(-2);
+  backGrab(false);
+
+  driveForward(2);
+  chassisTurn(90,right);
   driveForward(22);
+
+  chassisTurn(180,right);
+  backGrab(true);
+  
+
+  */
+
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -174,10 +211,10 @@ void backClaw(){
 
 void usercontrol(void) {
   // User control code here, inside the loop
-  clawState = true;
-  clawState2 = true;
-  DigitalOutF.set(clawState);
-  DigitalOutH.set(clawState2);
+   clawState = true;
+   clawState2 = false;
+   DigitalOutF.set(clawState);
+   DigitalOutH.set(clawState2);
   bool aPressed = false;
   bool bPressed = false;
   while (1) {
