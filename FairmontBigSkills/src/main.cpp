@@ -93,14 +93,27 @@ void backGrab() {
   BackClaw2.spinFor(1.3, turns, true);
 }
 
+void backRelease() {
+  BackClaw.spinFor(-1.3, turns, false);
+  BackClaw2.spinFor(-1.3, turns, true);
+}
+
 void frontGrab() {
   FrontClaw.setVelocity(100, percent);
   FrontClaw.spinFor(1, turns, false);
+}
+void frontRelease() {
+  FrontClaw.setVelocity(100, percent);
+  FrontClaw.spinFor(-1, turns, false);
 }
 
 void liftArm(bool waiting) {
   LeftArm.spinFor(1, turns, false);
   RightArm.spinFor(1, turns, waiting);
+}
+void lowerArm(bool waiting) {
+  LeftArm.spinFor(-1, turns, false);
+  RightArm.spinFor(-1, turns, waiting);
 }
 
 void chassisTurn (double deg, turnType dir) {
@@ -140,28 +153,45 @@ void chassisTurn (double deg, turnType dir) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous() {
-  /************Back up auton*************
-  // Drives backwards and grabs the first
-  // neutral goal with the back clamp
-  driveForward(-22.5);
-  driveForward(-4, false);
-  backGrab();
-  driveForward(15);
-  **************************************/
-  //************Potential Auton***********
-  // Grabs the neutral mobile goal with
-  // the Front claw
-  driveForward(20);
-  driveForward(6, false);
+  // Start in Corner facing towards middle goal
+  // Drive forward and grab the middle mobile goal
+  driveForward(51);
   frontGrab();
-  liftArm();
-  driveForward(-13);
-  chassisTurn(90, left);
-  driveForward(-8);
+  // Reverse to latitude of alliance goal
+  driveForward(-34);
+  // Turn to face Alliance goal and drop neutral goal in zone
+  turnChassis(45, left);
+  frontRelease();
+  // Grab alliance goal 
+  driveForward(-12);
   backGrab();
-  wait(1000, msec);
-  toggleIntake();
-  driveForward(5);
+  // Move to grab the neutral goal
+  driveForward(8);
+  turnChassis(90, right);
+  driveForward(18);
+  // Grab mobile goal 
+  frontGrab();
+  driveForward(12);
+  // Place alliance goal in corner
+  turnChassis(150, left);
+  driveForward(35);
+  backRelease();
+  // Grab other alliance goal
+  turnChassis(105, left);
+  driveForward(18);
+  backGrab();
+  // Go back to Home zone
+  turnChassis(45, right);
+  driveForward(120);
+  // Get on the zone
+  liftArm();
+  liftArm();
+  turnChassis(90, right);
+  lowerArm();
+  lowerArm();
+  driveForward(20);
+
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -261,7 +291,7 @@ void usercontrol(void) {
   // Control for the Intake
   Controller1.ButtonA.pressed(toggleIntake);
   Controller1.ButtonB.pressed(toggleOuttake);
-  Controller2.ButtonX.pressed(toggleLimit);
+  Controller1.ButtonX.pressed(toggleLimit);
   // User control code here, inside the loop
 
   while (true) {
@@ -270,12 +300,12 @@ void usercontrol(void) {
     rightChassisSpin(Controller1.Axis2.value());
     // Control for Lift
     // moveArm(true, false, Controller2.Axis3.value());
-    moveArm(Controller2.ButtonLeft.pressing(),
-            Controller2.ButtonDown.pressing());
+    moveArm(Controller1.ButtonLeft.pressing(),
+            Controller1.ButtonDown.pressing());
     // Control for Front Claw
-    frontClaw(Controller2.ButtonL2.pressing(), Controller2.ButtonL1.pressing());
+    frontClaw(Controller1.ButtonL2.pressing(), Controller1.ButtonL1.pressing());
     // Control for Back Claw
-    backClaw(Controller2.ButtonR1.pressing(), Controller2.ButtonR2.pressing());
+    backClaw(Controller1.ButtonR1.pressing(), Controller1.ButtonR2.pressing());
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
