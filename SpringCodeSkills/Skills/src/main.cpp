@@ -166,15 +166,13 @@ void autonomous(void) {
   // Insert autonomous user code here.
   // ..........................................................................
   
-  driveForward(46);
-  //lift(30);
   frontGrab(false);
-  wait(200,msec);
-  driveForward(-40);
+  wait(300,msec);
+  lift(3,false);
   clawState = false;
   clawState2 = true;
   //DigitalOutF.set(clawState);
-  DigitalOutH.set(clawState2);
+  //DigitalOutH.set(clawState2);
 
   //Skills Do not delete
   /*

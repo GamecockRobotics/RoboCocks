@@ -110,7 +110,7 @@ void chassisTurn (double deg, turnType dir) {
   const float threshold = 2.0;
   const float kp = 0.50;
   const float kd = 0.12;
-  const float ki = 0.00;
+  const float ki = 0.01;
   Gyro.setRotation(0, degrees);
   while (fabs(error) > threshold ||fabs (prevError) > threshold) {
     int speed = kp*error+kd*(prevError-error) + ki*totalError;
