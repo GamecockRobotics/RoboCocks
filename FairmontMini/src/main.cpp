@@ -1,3 +1,41 @@
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Controller1          controller                    
+// LeftArm              motor         1               
+// RightArm             motor         10              
+// LeftChassis0         motor         5               
+// LeftChassis1         motor         4               
+// LeftChassis2         motor         3               
+// RightChassis0        motor         19              
+// RightChassis1        motor         20              
+// RightChassis2        motor         17              
+// FrontClaw            motor         2               
+// BackClaw             motor         7               
+// Intake               motor         9               
+// BackClaw2            motor         12              
+// Gyro                 inertial      16              
+// Controller2          controller                    
+// ---- END VEXCODE CONFIGURED DEVICES ----
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Controller1          controller                    
+// LeftArm              motor         1               
+// RightArm             motor         10              
+// LeftChassis0         motor         5               
+// LeftChassis1         motor         4               
+// LeftChassis2         motor         3               
+// RightChassis0        motor         19              
+// RightChassis1        motor         20              
+// RightChassis2        motor         17              
+// FrontClaw            motor         2               
+// BackClaw             motor         7               
+// Intake               motor         9               
+// BackClaw2            motor         12              
+// Gyro                 inertial      16              
+// Controller2          controller                    
+// ---- END VEXCODE CONFIGURED DEVICES ----
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -79,38 +117,60 @@ void pre_auton(void) {
   // Example: clearing encoders, setting servo positions, ...
 }
 
-void driveForward(double dist, bool waiting) {
-  RightChassis0.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
-  LeftChassis0.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
-  RightChassis1.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
-  LeftChassis1.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
-  RightChassis2.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, false);
-  LeftChassis2.spinFor(dist / WHEEL_RADIUS * M_1_PI, turns, waiting);
+void driveForward(double dist, int speed, bool waiting) {
+  RightChassis0.setVelocity(speed, percent);
+  RightChassis1.setVelocity(speed, percent);
+  RightChassis2.setVelocity(speed, percent);
+  LeftChassis0.setVelocity(speed, percent);
+  LeftChassis1.setVelocity(speed, percent);
+  LeftChassis2.setVelocity(speed, percent);
+  RightChassis0.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
+  LeftChassis0.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
+  RightChassis1.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
+  LeftChassis1.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
+  RightChassis2.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
+  LeftChassis2.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, waiting);
 }
 
 void backGrab() {
-  BackClaw.spinFor(1.3, turns, false);
-  BackClaw2.spinFor(1.3, turns, true);
+  BackClaw.spinFor(1.2, turns, false);
+  BackClaw2.spinFor(1.2, turns, false);
+  wait(500, msec);
+}
+
+void backRelease() {
+  BackClaw.spinFor(-1.3, turns, false);
+  BackClaw2.spinFor(-1.3, turns, true);
 }
 
 void frontGrab() {
   FrontClaw.setVelocity(100, percent);
   FrontClaw.spinFor(1, turns, false);
+  wait(500, msec);
+}
+void frontRelease() {
+  FrontClaw.setVelocity(100, percent);
+  FrontClaw.spinFor(-1, turns, false);
 }
 
 void liftArm(bool waiting) {
   LeftArm.spinFor(1, turns, false);
   RightArm.spinFor(1, turns, waiting);
 }
+void lowerArm(bool waiting) {
+  LeftArm.spinFor(-1, turns, false);
+  RightArm.spinFor(-1, turns, waiting);
+  wait(1000, msec);
+}
 
-void chassisTurn (double deg, turnType dir) {
+void turnChassis (double deg, turnType dir) {
   float error = deg;
   float prevError = deg;
   float totalError = 0;
   const float threshold = 2.0;
   const float kp = 0.50;
   const float kd = 0.12;
-  const float ki = 0.00;
+  const float ki = 0.01;
   Gyro.setRotation(0, degrees);
   while (fabs(error) > threshold ||fabs (prevError) > threshold) {
     int speed = kp*error+kd*(prevError-error) + ki*totalError;
@@ -148,20 +208,40 @@ void autonomous() {
   backGrab();
   driveForward(15);
   **************************************/
-  //************Potential Auton***********
+  /************Potential Auton***********
   // Grabs the neutral mobile goal with
   // the Front claw
-  driveForward(20);
-  driveForward(6, false);
+  driveForward(38);
+  driveForward(14, false);
   frontGrab();
   liftArm();
-  driveForward(-13);
+  wait(1000, msec);
+  driveForward(-32);
   chassisTurn(90, left);
-  driveForward(-8);
+  driveForward(-16);
   backGrab();
   wait(1000, msec);
   toggleIntake();
-  driveForward(5);
+  driveForward(10);
+  **************************************/
+   driveForward(60);
+  driveForward(6, 10);
+  wait(200, msec);
+  frontGrab();
+  liftArm();
+  // Reverse to latitude of alliance goal
+  driveForward(-42);
+  // Turn to face Alliance goal and drop neutral goal in zone
+  turnChassis(45, left);
+  lowerArm();
+  frontRelease();
+  // Grab alliance goal 
+  driveForward(-12);
+  backGrab();
+  // Move to grab the neutral goal
+  driveForward(12);
+  turnChassis(90, right);
+  toggleIntake();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -269,13 +349,13 @@ void usercontrol(void) {
     leftChassisSpin(Controller1.Axis3.value());
     rightChassisSpin(Controller1.Axis2.value());
     // Control for Lift
-    // moveArm(true, false, Controller2.Axis3.value());
-    moveArm(Controller2.ButtonLeft.pressing(),
-            Controller2.ButtonDown.pressing());
+    moveArm(true, false, Controller2.Axis3.value());
+    // moveArm(Controller2.ButtonLeft.pressing(),
+    //         Controller2.ButtonDown.pressing());
     // Control for Front Claw
     frontClaw(Controller2.ButtonL2.pressing(), Controller2.ButtonL1.pressing());
     // Control for Back Claw
-    backClaw(Controller2.ButtonR1.pressing(), Controller2.ButtonR2.pressing());
+    backClaw(Controller2.ButtonR2.pressing(), Controller2.ButtonR1.pressing());
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }

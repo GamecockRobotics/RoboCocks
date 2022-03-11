@@ -28,10 +28,10 @@
 #ifndef INCLUDE_VEX_H_
 #define INCLUDE_VEX_H_
 enum intakeDirection { intake, outtake, stopped };
-const int WHEEL_RADIUS = 2;
+const int WHEEL_DIAMETER = 4;
 
 void p();
-void driveForward(double dist, bool waiting = true);
+void driveForward(double dist, int speed = 100, bool waiting = true);
 void backGrab() ;
 void frontGrab();
 void turnChassis (double deg, turnType dir);
@@ -43,5 +43,6 @@ void toggleOuttake() ;
 void frontClaw(bool close, bool open);
 void backClaw(bool close, bool open);
 void liftArm(bool waiting = false);
+void lowerArm(bool waiting = false);
 
 #endif
