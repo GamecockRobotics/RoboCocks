@@ -39,6 +39,7 @@ intakeDirection intakeState = stopped;
 const int WHEEL_DIAMETER = 4;
 bool clawState;
 bool clawState2;
+int motorSpeed = 100;
 //const float GEAR_DIAMETER = 3.5;
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -112,8 +113,8 @@ void backGrab(bool backClawState){
 }
 
 void frontGrab(bool frontClawState){
-  clawState = frontClawState;
   DigitalOutF.set(frontClawState);
+  clawState = frontClawState;
 }
 
 void lift(float ang, bool waiting = false){
@@ -154,6 +155,55 @@ void setMotorSpeed(float s){
   driveFrontRight.setVelocity(s,percent);
   driveMiddleRight.setVelocity(s,percent);
   driveBackRight.setVelocity(s,percent);
+  motorSpeed = s;
+}
+void accelerate(int to, int distance) {
+  int currSpeed = motorSpeed;
+  int distanceMoved = 0;
+  while (currSpeed != to && distanceMoved != distance) {
+    if (currSpeed != to) {
+      currSpeed+=1;
+      setMotorSpeed(currSpeed);
+    }
+    if (distanceMoved != distance) {
+      driveForward(1);
+    } 
+  }
+  motorSpeed = to;
+}
+void decelerate (int to, int distance) {
+  int currSpeed = motorSpeed;
+  int distanceMoved = 0;
+  
+  while (currSpeed != to && distanceMoved != distance) {
+    Brain.Screen.print(distanceMoved);
+    Brain.Screen.newLine();
+    if (currSpeed != to) {
+      currSpeed-=1;
+      setMotorSpeed(currSpeed);
+    }
+    if (distanceMoved <= distance) {
+      driveForward(5);
+      distanceMoved+=5;
+    }
+  }
+  motorSpeed = to;
+}
+
+void driveForward(int dist, int clawDist, bool waiting = true) {
+  int distDriven = 0;
+  if (distDriven != clawDist) {
+    driveFrontLeft.spinFor(-clawDist/WHEEL_DIAMETER*M_1_PI, turns, false);
+    driveMiddleLeft.spinFor(-clawDist/WHEEL_DIAMETER*M_1_PI, turns, false);
+    driveBackLeft.spinFor(-clawDist/WHEEL_DIAMETER*M_1_PI, turns, false);
+    driveFrontRight.spinFor(clawDist/WHEEL_DIAMETER*M_1_PI, turns, false);
+    driveMiddleRight.spinFor(clawDist/WHEEL_DIAMETER*M_1_PI, turns, false);
+    driveBackRight.spinFor(clawDist/WHEEL_DIAMETER*M_1_PI, turns, waiting);
+    distDriven = clawDist;
+  }
+  frontGrab(false);
+  
+  
 }
 
 /*---------------------------------------------------------------------------*/
@@ -170,25 +220,25 @@ void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
-  driveForward(37);
+  driveForward(46);
       //wait(300,msec);
   // setMotorSpeed(70);
   // driveForward(2);
-  setMotorSpeed(40);
-  driveForward(2);
-  setMotorSpeed(10);
-  driveForward(10);
+  //setMotorSpeed(40);
+  //driveForward(2);
+  //setMotorSpeed(10);
+  //driveForward(10);
   //driveForward(8);
   frontGrab(false);
   wait(300,msec);
-  lift(3,false);
-  setMotorSpeed(100);
+    //lift(3,false);
+  //setMotorSpeed(100);
   driveForward(-38);
   //TurnLeft(10);
-  chassisTurn(90,left);
-  frontGrab(false);
-  wait(300,msec);
-  lift(3,false);
+  //chassisTurn(90,left);
+  //frontGrab(false);
+  //wait(300,msec);
+  //lift(3,false);
   
   //DigitalOutF.set(clawState);
   //DigitalOutH.set(clawState2);
@@ -267,6 +317,7 @@ void backClaw(){
       wait(100, msec);
     }
 }
+
 
 
  const int speed = 100;
