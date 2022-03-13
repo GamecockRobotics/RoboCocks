@@ -18,7 +18,7 @@
 // driveMiddleRight     motor         8               
 // driveBackRight       motor         9               
 // DigitalOutF          digital_out   F               
-// Gyro                 inertial      12              
+// Gyro                 inertial      13              
 // RightLift            motor         10              
 // LeftLift             motor         1               
 // DigitalOutH          digital_out   H               
@@ -123,7 +123,7 @@ void lift(float ang, bool waiting = false){
 }
 
 int sensor(){
-  int num;
+  int num =0;
   return num;
 }
 
@@ -131,30 +131,37 @@ void generalPID(float kp, float ki, float kd, float target, float threshold, flo
 
 }
 
-void driveForwardPID(int dist, directionType dir){
-  float error = dist;
-  float prevError = error;
+void driveForwardPID(int dist){
+  //Brain.Screen.clearScreen();
+  float deg = dist / WHEEL_DIAMETER * M_1_PI * 360;
+  Brain.Screen.print(dist);
+  Brain.Screen.newLine();
+  Brain.Screen.print(deg);
+  float error = deg;
+  float prevError = deg;
   float totalError = 0;
   const float threshold = 7;
-  const float kp = 0.00;
+  const float kp = 0.10;
   const float kd = 0.00;
   const float ki = 0.00;
-  Gyro.setRotation(0,degrees);
+  int speed;
+  driveMiddleRight.setPosition(0, degrees);
+  driveMiddleLeft.setPosition(0,degrees);
   while(fabs(error) > threshold || fabs(prevError) > threshold){
-    int speed = kp *error+kd*(prevError-error) + ki*totalError;
-    driveFrontRight.spin(dir == forward? forward:reverse, speed, percent);
-    driveMiddleRight.spin(dir == forward? forward:reverse, speed, percent);
-    driveBackRight.spin(dir == forward? forward:reverse, speed, percent);
-    driveFrontLeft.spin(dir == forward?forward:reverse, speed, percent);
-    driveMiddleLeft.spin(dir == forward?forward:reverse, speed, percent);
-    driveBackLeft.spin(dir == forward?forward:reverse, speed, percent);
+    speed = kp *error+kd*(prevError-error) + ki*totalError;
+    driveFrontRight.spin(forward, speed, percent);
+    driveMiddleRight.spin(forward, speed, percent);
+    driveBackRight.spin(forward, speed, percent);
+    driveFrontLeft.spin(forward, speed, percent);
+    driveMiddleLeft.spin(forward, speed, percent);
+    driveBackLeft.spin(forward, speed, percent);
     wait(200, msec);
     prevError = error;
-    error = dist - fabs(Gyro.rotation());
-    if (fabs(error) < 500) {
+    error = dist - driveMiddleLeft.position(degrees);
+    //Brain.Screen.print(error);
+    //Brain.Screen.newLine();
+    if (fabs(error) < 10) {
       totalError = totalError + error;
-      if(totalError > 500)
-        totalError = 0;
     }
 
   }
@@ -162,25 +169,29 @@ void driveForwardPID(int dist, directionType dir){
 }
 
 void chassisTurn (double deg, turnType dir) {
+  Brain.Screen.clearScreen();
   float error = deg;
   float prevError = deg;
   float totalError = 0;
   const float threshold = 2.0;
-  const float kp = 0.50;
-  const float kd = 0.12;
-  const float ki = 0.00;
+  const float kp = 0.40;
+  const float kd = 0.08;
+  const float ki = 0.000002;
   Gyro.setRotation(0, degrees);
-  while (fabs(error) > threshold ||fabs (prevError) > threshold) {
+  while (fabs(error) > threshold || fabs (prevError) > threshold) {
     int speed = kp*error+kd*(prevError-error) + ki*totalError;
-    driveFrontRight.spin(dir == right? forward:reverse, speed, percent);
-    driveMiddleRight.spin(dir == right? forward:reverse, speed, percent);
-    driveBackRight.spin(dir == right? forward:reverse, speed, percent);
-    driveFrontLeft.spin(dir == left?forward:reverse, speed, percent);
-    driveMiddleLeft.spin(dir == left?forward:reverse, speed, percent);
-    driveBackLeft.spin(dir == left?forward:reverse, speed, percent);
+    driveFrontRight.spin(dir == right? reverse:forward, speed, percent);
+    driveMiddleRight.spin(dir == right? reverse:forward, speed, percent);
+    driveBackRight.spin(dir == right? reverse:forward, speed, percent);
+    driveFrontLeft.spin(dir == left?reverse:forward, speed, percent);
+    driveMiddleLeft.spin(dir == left?reverse:forward, speed, percent);
+    driveBackLeft.spin(dir == left?reverse:forward, speed, percent);
     wait(200, msec);
     prevError = error;
     error = deg - fabs(Gyro.rotation());
+    Brain.Screen.print(error);
+    Brain.Screen.newLine();
+
     if (fabs(error) < 10) {
       totalError = totalError + error;
     }
@@ -209,13 +220,62 @@ void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
-  /*
-    driveForward(2);
+    //Skills
+    /*
+    driveForward(-7);
+    //wait(300,msec);
+    backGrab(false);
+    wait(300,msec);
+    driveForward(5);
+    chassisTurn(80, right);
+    driveForward(37);
     frontGrab(false);
     wait(300,msec);
     lift(3,false);
+    driveForward(40);
+    wait(1000,msec);
+    driveForward(-8);
+    chassisTurn(90,right);
+    driveForward(-10);
+    wait(500,msec);
+    chassisTurn(90,right);
+    driveForward(-90);
+    wait(500,msec);
+    driveForward(90);
+    chassisTurn(90,right);
+    lift(10,false);
+    driveForward(20);
+    lift(-10,false);
+    driveForward(20); */
+    
+    driveForwardPID(10);
+    //chassisTurn(90,left);
+    //driveForward(5);
+
+    /*
+    lift(-3,false);
+    frontGrab(true);
+    wait(300,msec);
+    driveForward(-15);
+    chassisTurn(180,right);
+    driveForward(-10);
+    frontGrab(false);
+    wait(300,msec);
+    lift(3,false);
+    driveForward(10);
+    chassisTurn(90,left);
+    driveForward(90);*/
+    
+
+
+
+
+
+    
+    /*
+    
     chassisTurn(90, left);
-    driveForward(27);
+    
     chassisTurn(180, left);
     driveForward(-19);
     backGrab(false);
@@ -235,15 +295,15 @@ void autonomous(void) {
     lift(3,false);
     driveForward(3);
     lift(-5,false);
-    driveForward(10);
+    driveForward(10);*/
 
 
 
 
 
     
-  */
-  driveForward(80);
+  
+  //driveForward(80);
   //frontGrab(false);
   //wait(300,msec);
   //lift(3,false);
@@ -399,9 +459,17 @@ void usercontrol(void) {
       bPressed = false;
     }
 
-  //   if(Controller1.ButtonX.pressing()){
-  //     driveForward(37);
-  //     //wait(300,msec);
+     //if(Controller1.ButtonX.pressing()){
+        //setMotorSpeed(100);
+        
+        
+        
+
+
+
+
+
+  //     //
   // // setMotorSpeed(70);
   // // driveForward(2);
   // setMotorSpeed(40);
@@ -409,21 +477,19 @@ void usercontrol(void) {
   // setMotorSpeed(10);
   // driveForward(10);
   // //driveForward(8);
-  // frontGrab(false);
-  // wait(300,msec);
-  // lift(3,false);
+  
   // setMotorSpeed(100);
   // driveForward(-38);
   // //TurnLeft(10);
   // chassisTurn(90,left);
-  // /*
+  // 
   // setMotorSpeed(25);
   // driveForward(-6);
   // backGrab(false);
   // wait(300,msec);
   // setMotorSpeed(100);
-  // driveForward(7);*/
-  //   }
+  // driveForward(7);
+     //}
     
 
 
