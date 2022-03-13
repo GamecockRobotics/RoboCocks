@@ -233,15 +233,14 @@ void autonomous() {
   driveForward(-42);
   // Turn to face Alliance goal and drop neutral goal in zone
   turnChassis(45, left);
-  lowerArm();
-  frontRelease();
   // Grab alliance goal 
   driveForward(-12);
   backGrab();
   // Move to grab the neutral goal
   driveForward(12);
-  turnChassis(90, right);
+  turnChassis(45, right);
   toggleIntake();
+  driveForward(-12);
 }
 
 /*---------------------------------------------------------------------------*/

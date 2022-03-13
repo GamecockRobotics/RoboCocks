@@ -182,10 +182,18 @@ void autonomous() {
   driveForward(-12);
   backGrab();
   // Move to grab the neutral goal
-  driveForward(12);
+  driveForward(16);
   turnChassis(90, right);
   toggleIntake();
-  driveForward(100);
+  wait(300, msec);
+  toggleIntake();
+  driveForward(14);
+  driveForward(8, 20);
+  frontGrab();
+  driveForward(15);
+  turnChassis(150, left);
+  driveForward(50);
+  backRelease();
   /*
   driveForward(12);
   // Place alliance goal in corner
@@ -317,9 +325,9 @@ void usercontrol(void) {
     moveArm(Controller1.ButtonLeft.pressing(),
             Controller1.ButtonDown.pressing());
     // Control for Front Claw
-    frontClaw(Controller1.ButtonL2.pressing(), Controller1.ButtonL1.pressing());
+    frontClaw(Controller1.ButtonL1.pressing(), Controller1.ButtonL2.pressing());
     // Control for Back Claw
-    backClaw(Controller1.ButtonR2.pressing(), Controller1.ButtonR1.pressing());
+    backClaw(Controller1.ButtonR1.pressing(), Controller1.ButtonR2.pressing());
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
