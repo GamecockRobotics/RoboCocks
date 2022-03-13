@@ -221,7 +221,7 @@ void autonomous(void) {
   // Insert autonomous user code here.
   // ..........................................................................
     //Skills
-    /*
+    
     driveForward(-7);
     //wait(300,msec);
     backGrab(false);
@@ -233,7 +233,7 @@ void autonomous(void) {
     wait(300,msec);
     lift(3,false);
     driveForward(40);
-    wait(1000,msec);
+    wait(1000,msec);/*
     driveForward(-8);
     chassisTurn(90,right);
     driveForward(-10);
@@ -246,9 +246,9 @@ void autonomous(void) {
     lift(10,false);
     driveForward(20);
     lift(-10,false);
-    driveForward(20); */
-    
-    driveForwardPID(10);
+    driveForward(20); 
+    */
+    //driveForwardPID(10);
     //chassisTurn(90,left);
     //driveForward(5);
 
