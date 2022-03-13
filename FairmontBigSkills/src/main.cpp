@@ -101,8 +101,9 @@ void backGrab() {
 }
 
 void backRelease() {
-  BackClaw.spinFor(-1.3, turns, false);
-  BackClaw2.spinFor(-1.3, turns, true);
+  BackClaw.spinFor(-1.2, turns, false);
+  BackClaw2.spinFor(-1.2, turns, false);
+  wait(1000, msec);
 }
 
 void frontGrab() {
@@ -173,39 +174,38 @@ void autonomous() {
   frontGrab();
   liftArm();
   // Reverse to latitude of alliance goal
-  driveForward(-42);
+  driveForward(-43);
   // Turn to face Alliance goal and drop neutral goal in zone
   turnChassis(45, left);
+  driveForward(10, 40);
   lowerArm();
   frontRelease();
+  driveForward(-10, 40);
   // Grab alliance goal 
-  driveForward(-12);
+  driveForward(-10, 50);
   backGrab();
-  // Move to grab the neutral goal
-  driveForward(12);
+  // Position to grab the neutral goal
+  driveForward(14);
   turnChassis(90, right);
+  // Get Rings
   toggleIntake();
-  driveForward(100);
-  /*
-  driveForward(12);
+  wait(300, msec);
+  toggleIntake();
+  // grab neutral goal
+  driveForward(14);
+  driveForward(8, 20);
+  frontGrab();
+  liftArm();
   // Place alliance goal in corner
+  driveForward(15);
   turnChassis(150, left);
-  driveForward(35);
+  driveForward(-30, 60);
   backRelease();
   // Grab other alliance goal
-  turnChassis(105, left);
-  driveForward(18);
+  turnChassis(70, left);
+  driveForward(-16);
   backGrab();
-  // Go back to Home zone
-  turnChassis(45, right);
-  driveForward(120);
-  // Get on the zone
-  liftArm();
-  liftArm();
-  turnChassis(90, right);
-  lowerArm();
-  lowerArm();
-  driveForward(20);*/
+ 
 }
 
 /*---------------------------------------------------------------------------*/
@@ -317,9 +317,9 @@ void usercontrol(void) {
     moveArm(Controller1.ButtonLeft.pressing(),
             Controller1.ButtonDown.pressing());
     // Control for Front Claw
-    frontClaw(Controller1.ButtonL2.pressing(), Controller1.ButtonL1.pressing());
+    frontClaw(Controller1.ButtonL1.pressing(), Controller1.ButtonL2.pressing());
     // Control for Back Claw
-    backClaw(Controller1.ButtonR2.pressing(), Controller1.ButtonR1.pressing());
+    backClaw(Controller1.ButtonR1.pressing(), Controller1.ButtonR2.pressing());
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
