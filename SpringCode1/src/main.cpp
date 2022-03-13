@@ -37,6 +37,8 @@ enum intakeDirection { intake, outtake, stopped };
 intakeDirection intakeState = stopped;
 
 const int WHEEL_DIAMETER = 4;
+bool clawState;
+bool clawState2;
 //const float GEAR_DIAMETER = 3.5;
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -54,8 +56,10 @@ void pre_auton(void) {
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
-  DigitalOutF.set(true);
-  DigitalOutH.set(true);
+  clawState = true;
+  clawState2 = true;
+  DigitalOutF.set(clawState);
+  DigitalOutH.set(clawState2);
   driveFrontLeft.setVelocity(100,percent);
   driveMiddleLeft.setVelocity(100,percent);
   driveBackLeft.setVelocity(100,percent);
@@ -103,10 +107,12 @@ void TurnRight(float dist){
 }
 
 void backGrab(bool backClawState){
+  clawState2 = backClawState;
   DigitalOutH.set(backClawState);
 }
 
 void frontGrab(bool frontClawState){
+  clawState = frontClawState;
   DigitalOutF.set(frontClawState);
 }
 
@@ -149,8 +155,7 @@ void setMotorSpeed(float s){
   driveMiddleRight.setVelocity(s,percent);
   driveBackRight.setVelocity(s,percent);
 }
-bool clawState;
-bool clawState2;
+
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
 /*                              Autonomous Task                              */
@@ -165,16 +170,28 @@ void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
-  
-  driveForward(46);
-  //lift(30);
+  driveForward(37);
+      //wait(300,msec);
+  // setMotorSpeed(70);
+  // driveForward(2);
+  setMotorSpeed(40);
+  driveForward(2);
+  setMotorSpeed(10);
+  driveForward(10);
+  //driveForward(8);
   frontGrab(false);
-  wait(200,msec);
-  driveForward(-40);
-  clawState = false;
-  clawState2 = true;
+  wait(300,msec);
+  lift(3,false);
+  setMotorSpeed(100);
+  driveForward(-38);
+  //TurnLeft(10);
+  chassisTurn(90,left);
+  frontGrab(false);
+  wait(300,msec);
+  lift(3,false);
+  
   //DigitalOutF.set(clawState);
-  DigitalOutH.set(clawState2);
+  //DigitalOutH.set(clawState2);
 
   //Skills Do not delete
   /*

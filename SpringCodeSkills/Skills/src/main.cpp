@@ -37,6 +37,8 @@ enum intakeDirection { intake, outtake, stopped };
 intakeDirection intakeState = stopped;
 
 const int WHEEL_DIAMETER = 4;
+bool clawState;
+bool clawState2;
 //const float GEAR_DIAMETER = 3.5;
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -54,8 +56,10 @@ void pre_auton(void) {
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
-  DigitalOutF.set(true);
-  DigitalOutH.set(true);
+  clawState = true;
+  clawState2 = true;
+  DigitalOutF.set(clawState);
+  DigitalOutH.set(clawState2);
   driveFrontLeft.setVelocity(100,percent);
   driveMiddleLeft.setVelocity(100,percent);
   driveBackLeft.setVelocity(100,percent);
@@ -73,9 +77,9 @@ void pre_auton(void) {
 
 void driveForward(int dist, bool waiting = true) {
   
-  driveFrontLeft.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
-  driveMiddleLeft.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
-  driveBackLeft.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
+  driveFrontLeft.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
+  driveMiddleLeft.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
+  driveBackLeft.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
   driveFrontRight.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
   driveMiddleRight.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
   driveBackRight.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, waiting);
@@ -85,28 +89,30 @@ void driveForward(int dist, bool waiting = true) {
 
 
 void TurnLeft(float dist){
-  driveFrontLeft.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
-  driveMiddleLeft.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
-  driveBackLeft.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
+  driveFrontLeft.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
+  driveMiddleLeft.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
+  driveBackLeft.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
   driveFrontRight.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
   driveMiddleRight.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
   driveBackRight.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
 }
 
 void TurnRight(float dist){
-  driveFrontLeft.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
-  driveMiddleLeft.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
-  driveBackLeft.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
+  driveFrontLeft.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
+  driveMiddleLeft.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
+  driveBackLeft.spinFor(-dist/WHEEL_DIAMETER*M_1_PI, turns, false);
   driveFrontRight.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
   driveMiddleRight.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
   driveBackRight.spinFor(dist/WHEEL_DIAMETER*M_1_PI, turns, false);
 }
 
 void backGrab(bool backClawState){
+  clawState2 = backClawState;
   DigitalOutH.set(backClawState);
 }
 
 void frontGrab(bool frontClawState){
+  clawState = frontClawState;
   DigitalOutF.set(frontClawState);
 }
 
@@ -114,6 +120,45 @@ void lift(float ang, bool waiting = false){
     RightLift.spinFor(ang/7, turns, false);
     LeftLift.spinFor(ang/7, turns, waiting);
   
+}
+
+int sensor(){
+  int num;
+  return num;
+}
+
+void generalPID(float kp, float ki, float kd, float target, float threshold, float totalError =0){
+
+}
+
+void driveForwardPID(int dist, directionType dir){
+  float error = dist;
+  float prevError = error;
+  float totalError = 0;
+  const float threshold = 7;
+  const float kp = 0.00;
+  const float kd = 0.00;
+  const float ki = 0.00;
+  Gyro.setRotation(0,degrees);
+  while(fabs(error) > threshold || fabs(prevError) > threshold){
+    int speed = kp *error+kd*(prevError-error) + ki*totalError;
+    driveFrontRight.spin(dir == forward? forward:reverse, speed, percent);
+    driveMiddleRight.spin(dir == forward? forward:reverse, speed, percent);
+    driveBackRight.spin(dir == forward? forward:reverse, speed, percent);
+    driveFrontLeft.spin(dir == forward?forward:reverse, speed, percent);
+    driveMiddleLeft.spin(dir == forward?forward:reverse, speed, percent);
+    driveBackLeft.spin(dir == forward?forward:reverse, speed, percent);
+    wait(200, msec);
+    prevError = error;
+    error = dist - fabs(Gyro.rotation());
+    if (fabs(error) < 500) {
+      totalError = totalError + error;
+      if(totalError > 500)
+        totalError = 0;
+    }
+
+  }
+
 }
 
 void chassisTurn (double deg, turnType dir) {
@@ -130,9 +175,9 @@ void chassisTurn (double deg, turnType dir) {
     driveFrontRight.spin(dir == right? forward:reverse, speed, percent);
     driveMiddleRight.spin(dir == right? forward:reverse, speed, percent);
     driveBackRight.spin(dir == right? forward:reverse, speed, percent);
-    driveFrontLeft.spin(dir == right?forward:reverse, speed, percent);
-    driveMiddleLeft.spin(dir == right?forward:reverse, speed, percent);
-    driveBackLeft.spin(dir == right?forward:reverse, speed, percent);
+    driveFrontLeft.spin(dir == left?forward:reverse, speed, percent);
+    driveMiddleLeft.spin(dir == left?forward:reverse, speed, percent);
+    driveBackLeft.spin(dir == left?forward:reverse, speed, percent);
     wait(200, msec);
     prevError = error;
     error = deg - fabs(Gyro.rotation());
@@ -149,8 +194,7 @@ void setMotorSpeed(float s){
   driveMiddleRight.setVelocity(s,percent);
   driveBackRight.setVelocity(s,percent);
 }
-bool clawState;
-bool clawState2;
+
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
 /*                              Autonomous Task                              */
@@ -165,12 +209,45 @@ void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
+  /*
+    driveForward(2);
+    frontGrab(false);
+    wait(300,msec);
+    lift(3,false);
+    chassisTurn(90, left);
+    driveForward(27);
+    chassisTurn(180, left);
+    driveForward(-19);
+    backGrab(false);
+    driveForward(-20);
+    chassisTurn(90,right);
+    backGrab(true);
+    chassisTurn(180,right);
+    driveForward(6);
+    backGrab(false);
+    driveForward(3);
+    chassisTurn(90, right);
+    driveForward(30);
+    chassisTurn(180,left);
+    backGrab(false);
+    driveForward(40);
+    chassisTurn(90,right);
+    lift(3,false);
+    driveForward(3);
+    lift(-5,false);
+    driveForward(10);
+
+
+
+
+
+    
+  */
+  driveForward(80);
+  //frontGrab(false);
+  //wait(300,msec);
+  //lift(3,false);
   
-  frontGrab(false);
-  wait(300,msec);
-  lift(3,false);
-  clawState = false;
-  clawState2 = true;
   //DigitalOutF.set(clawState);
   //DigitalOutH.set(clawState2);
 
@@ -267,9 +344,9 @@ void usercontrol(void) {
     // ........................................................................
 
     
-    driveFrontLeft.spin(forward, -Controller1.Axis3.value(), percent);
-    driveMiddleLeft.spin(forward, -Controller1.Axis3.value(), percent);
-    driveBackLeft.spin(forward, -Controller1.Axis3.value(), percent);
+    driveFrontLeft.spin(forward, Controller1.Axis3.value(), percent);
+    driveMiddleLeft.spin(forward, Controller1.Axis3.value(), percent);
+    driveBackLeft.spin(forward, Controller1.Axis3.value(), percent);
     driveFrontRight.spin(forward, Controller1.Axis2.value(), percent);
     driveMiddleRight.spin(forward, Controller1.Axis2.value(), percent);
     driveBackRight.spin(forward, Controller1.Axis2.value(), percent);
@@ -322,31 +399,31 @@ void usercontrol(void) {
       bPressed = false;
     }
 
-    if(Controller1.ButtonX.pressing()){
-      driveForward(37);
-      //wait(300,msec);
-  // setMotorSpeed(70);
+  //   if(Controller1.ButtonX.pressing()){
+  //     driveForward(37);
+  //     //wait(300,msec);
+  // // setMotorSpeed(70);
+  // // driveForward(2);
+  // setMotorSpeed(40);
   // driveForward(2);
-  setMotorSpeed(40);
-  driveForward(2);
-  setMotorSpeed(10);
-  driveForward(10);
-  //driveForward(8);
-  frontGrab(false);
-  wait(300,msec);
-  lift(3,false);
-  setMotorSpeed(100);
-  driveForward(-38);
-  //TurnLeft(10);
-  chassisTurn(90,left);
-  /*
-  setMotorSpeed(25);
-  driveForward(-6);
-  backGrab(false);
-  wait(300,msec);
-  setMotorSpeed(100);
-  driveForward(7);*/
-    }
+  // setMotorSpeed(10);
+  // driveForward(10);
+  // //driveForward(8);
+  // frontGrab(false);
+  // wait(300,msec);
+  // lift(3,false);
+  // setMotorSpeed(100);
+  // driveForward(-38);
+  // //TurnLeft(10);
+  // chassisTurn(90,left);
+  // /*
+  // setMotorSpeed(25);
+  // driveForward(-6);
+  // backGrab(false);
+  // wait(300,msec);
+  // setMotorSpeed(100);
+  // driveForward(7);*/
+  //   }
     
 
 
