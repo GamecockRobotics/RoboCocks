@@ -292,7 +292,7 @@ void usercontrol(void) {
     driveFrontRight.spin(forward, Controller1.Axis2.value(), percent);
     driveMiddleRight.spin(forward, Controller1.Axis2.value(), percent);
     driveBackRight.spin(forward, Controller1.Axis2.value(), percent);
-
+    
     //This is to change the claws from toggle to different buttons
     /*
     if(Controller1.ButtonR1.pressing()){
