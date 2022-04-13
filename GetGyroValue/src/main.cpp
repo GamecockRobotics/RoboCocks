@@ -148,19 +148,24 @@ void balance() {
     // if(fabs(Gyro.pitch()) < 3){
     //   speed = speed/2;
     // }
-    driveFrontRight.spin((error/fabs(error)) == 1?forward:forward, speed, percent);
-    driveMiddleRight.spin((error/fabs(error)) == 1?forward:forward, speed, percent);
-    driveBackRight.spin((error/fabs(error)) == 1?forward:forward, speed, percent);
-    driveFrontLeft.spin((error/fabs(error)) == 1?forward:forward, speed, percent);
-    driveMiddleLeft.spin((error/fabs(error)) == 1?forward:forward, speed, percent);
-    driveBackLeft.spin((error/fabs(error)) == 1?forward:forward, speed, percent);
+    driveFrontRight.spin((error/fabs(error)) == 1?forward:forward, speedRight, percent);
+    driveMiddleRight.spin((error/fabs(error)) == 1?forward:forward, speedRight, percent);
+    driveBackRight.spin((error/fabs(error)) == 1?forward:forward, speedRight, percent);
+    driveFrontLeft.spin((error/fabs(error)) == 1?forward:forward, speedLeft, percent);
+    driveMiddleLeft.spin((error/fabs(error)) == 1?forward:forward, speedLeft, percent);
+    driveBackLeft.spin((error/fabs(error)) == 1?forward:forward, speedLeft, percent);
     wait(200, msec);
     prevError = error;
     error = Gyro.pitch();
+    prevError2 = error2;
+    error2 = Gyro.pitch();
     //wait(2000, msec);
     //Brain.Screen.clearScreen();
     if (fabs(error) < 10) {
       totalError = totalError + error;
+    }
+    if (fabs(error2) < 10) {
+      totalError2 = totalError2 + error2;
     }
   }
   driveFrontRight.stop(hold);
@@ -294,15 +299,15 @@ void usercontrol(void) {
     // ........................................................................
 
     
-    // driveFrontLeft.spin(forward, -Controller1.Axis3.value(), percent);
-    // driveMiddleLeft.spin(forward, -Controller1.Axis3.value(), percent);
-    // driveBackLeft.spin(forward, -Controller1.Axis3.value(), percent);
-    // driveFrontRight.spin(forward, Controller1.Axis2.value(), percent);
-    // driveMiddleRight.spin(forward, Controller1.Axis2.value(), percent);
-    // driveBackRight.spin(forward, Controller1.Axis2.value(), percent);
+    driveFrontLeft.spin(forward, Controller1.Axis3.value(), percent);
+    driveMiddleLeft.spin(forward, Controller1.Axis3.value(), percent);
+    driveBackLeft.spin(forward, Controller1.Axis3.value(), percent);
+    driveFrontRight.spin(forward, Controller1.Axis2.value(), percent);
+    driveMiddleRight.spin(forward, Controller1.Axis2.value(), percent);
+    driveBackRight.spin(forward, Controller1.Axis2.value(), percent);
     //if(Gyro.pitch() >= -3)
-    Brain.Screen.print(Gyro.pitch());
-    wait(2000, msec);
+    // Brain.Screen.print(Gyro.pitch());
+    // wait(2000, msec);
     //Brain.Screen.clearLine();
 
 
