@@ -102,6 +102,68 @@ void pre_auton(void) {
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
+void drive (double dist) {
+  double errorL = dist/WHEEL_DIAMETER*M_1_PI;
+  double errorR = dist/WHEEL_DIAMETER*M_1_PI;
+  double errorA = 0;
+  double prevErrorL = errorL;
+  double prevErrorR = errorR;
+  double prevErrorA = 0;
+  double totalErrorL = 0;
+  double totalErrorR = 0;
+  double totalErrorA = 0;
+  const double threshold = 2.0;
+  const float kp = 0.50;
+  const float kd = 0.12;
+  const float ki = 0.01;
+  const float kpa = 0.05;
+  const float kda = 0.01;
+  const float kia = 0.001;
+  bool left = true;
+  bool right = true;
+  bool straight = true;
+  LeftChassis0.setRotation(0, degrees);
+  RightChassis0.setRotation(0, degrees);
+  while (left || right || !straight) {
+    int speedL = kp*errorL+kd*(prevErrorL-errorL) + ki*totalErrorL;// - (kpa*errorA + kda*(prevErrorA-errorA) +kia*totalErrorA);
+    int speedR = kp*errorR+kd*(prevErrorR-errorR) + ki*totalErrorR;// + (kpa*errorA + kda*(prevErrorA-errorA) +kia*totalErrorA);
+    if (left) {
+      LeftChassis0.spin(forward, speedL, percent);
+      LeftChassis1.spin(forward, speedL, percent);
+      LeftChassis2.spin(forward, speedL, percent);
+    } else {
+      LeftChassis0.stop(hold);
+      LeftChassis1.stop(hold);
+      LeftChassis2.stop(hold);
+    }
+    if (right) {
+      RightChassis0.spin(forward, speedR, percent);
+      RightChassis1.spin(forward, speedR, percent);
+      RightChassis2.spin(forward, speedR, percent);
+    } else {
+      RightChassis0.stop(hold);
+      RightChassis1.stop(hold);
+      RightChassis2.stop(hold);
+    }
+    wait(200, msec);
+    prevErrorL = errorL;
+    prevErrorR = errorR;
+    prevErrorA = errorA;
+    errorL = dist/WHEEL_DIAMETER*M_1_PI - LeftChassis0.rotation(degrees);
+    errorR = dist/WHEEL_DIAMETER*M_1_PI - RightChassis0.rotation(degrees);
+    errorA = fabs(Gyro.heading()) > 3 ? Gyro.heading() : 0;
+    if (fabs(errorL) < 10) {
+      totalErrorL = totalErrorL + errorL;
+    }
+    if (fabs(errorR) < 10) {
+      totalErrorR = totalErrorR + errorR;
+    }
+    totalErrorA = totalErrorA + errorA;
+    left = fabs(errorL) > threshold || fabs (prevErrorL) > threshold;
+    right = fabs(errorR) > threshold || fabs (prevErrorR) > threshold;
+  }
+}
+
 void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
