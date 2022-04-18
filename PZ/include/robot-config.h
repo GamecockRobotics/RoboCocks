@@ -7,14 +7,15 @@ extern controller Controller1;
 extern inertial Gyro;
 extern motor LeftChassis0;
 extern motor LeftClamp;
-extern motor RightClamp;
+extern motor RightChassis0;
 extern motor LeftChassis1;
 extern motor LeftArm;
 extern motor LeftChassis2;
 extern motor RightArm;
 extern motor RightChassis1;
 extern motor RightChassis2;
-extern motor RightChassis0;
+extern motor RightClamp;
+extern motor Intake;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
