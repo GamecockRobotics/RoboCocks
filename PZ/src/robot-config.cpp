@@ -21,6 +21,7 @@ motor RightChassis1 = motor(PORT18, ratio6_1, false);
 motor RightChassis2 = motor(PORT19, ratio6_1, false);
 motor RightClamp = motor(PORT10, ratio18_1, false);
 motor Intake = motor(PORT5, ratio18_1, false);
+digital_out frontClaw = digital_out(Brain.ThreeWirePort.H);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

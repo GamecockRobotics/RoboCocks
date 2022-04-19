@@ -9,19 +9,19 @@ brain  Brain;
 
 // VEXcode device constructors
 controller Controller1 = controller(primary);
-motor driveFrontLeft = motor(PORT17, ratio18_1, true);
+motor driveFrontLeft = motor(PORT16, ratio18_1, true);
 motor driveMiddleLeft = motor(PORT18, ratio18_1, true);
 motor driveBackLeft = motor(PORT19, ratio18_1, true);
-motor driveFrontRight = motor(PORT8, ratio18_1, false);
+motor driveFrontRight = motor(PORT2, ratio18_1, false);
 motor driveMiddleRight = motor(PORT7, ratio18_1, false);
 motor driveBackRight = motor(PORT5, ratio18_1, false);
 inertial Gyro = inertial(PORT9);
-motor backClawLeft = motor(PORT16, ratio18_1, true);
-motor backClawRight = motor(PORT6, ratio18_1, false);
+motor backClawLeft = motor(PORT17, ratio18_1, true);
+motor backClawRight = motor(PORT8, ratio18_1, false);
 motor frontLiftRight = motor(PORT4, ratio18_1, false);
 motor frontLiftLeft = motor(PORT15, ratio18_1, true);
 motor Intake = motor(PORT1, ratio18_1, false);
-digital_out leftPiston = digital_out(Brain.ThreeWirePort.A);
+digital_out claw = digital_out(Brain.ThreeWirePort.H);
 digital_out rightPiston = digital_out(Brain.ThreeWirePort.B);
 
 // VEXcode generated functions

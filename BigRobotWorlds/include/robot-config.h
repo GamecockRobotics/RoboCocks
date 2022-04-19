@@ -16,7 +16,7 @@ extern motor backClawRight;
 extern motor frontLiftRight;
 extern motor frontLiftLeft;
 extern motor Intake;
-extern digital_out leftPiston;
+extern digital_out claw;
 extern digital_out rightPiston;
 
 /**

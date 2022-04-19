@@ -11,19 +11,19 @@
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
-// driveFrontLeft       motor         17              
+// driveFrontLeft       motor         16              
 // driveMiddleLeft      motor         18              
 // driveBackLeft        motor         19              
-// driveFrontRight      motor         8               
+// driveFrontRight      motor         2               
 // driveMiddleRight     motor         7               
 // driveBackRight       motor         5               
 // Gyro                 inertial      9               
-// backClawLeft         motor         16              
-// backClawRight        motor         6               
+// backClawLeft         motor         17              
+// backClawRight        motor         8               
 // frontLiftRight       motor         4               
 // frontLiftLeft        motor         15              
 // Intake               motor         1               
-// leftPiston           digital_out   A               
+// claw                 digital_out   H               
 // rightPiston          digital_out   B               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
@@ -60,8 +60,7 @@ void pre_auton(void) {
   // Example: clearing encoders, setting servo positions, ...
   clawState = true;
   // clawState2 = true;
-  leftPiston.set(clawState);
-  rightPiston.set(clawState);
+  claw.set(clawState);
   driveFrontLeft.setVelocity(100,percent);
   driveMiddleLeft.setVelocity(100,percent);
   driveBackLeft.setVelocity(100,percent);
@@ -113,8 +112,7 @@ void TurnRight(float dist){
 
 void frontGrab(bool frontClawState){
   clawState = frontClawState;
-  leftPiston.set(frontClawState);
-  rightPiston.set(frontClawState);
+  claw.set(frontClawState);
 }
 
 void lift(float ang, bool waiting = false){
@@ -278,16 +276,15 @@ void toggleOuttake() {
 void backClaw(){
   
 }
+
 void frontClaw(){
   if(clawState){
       clawState = false;
-      leftPiston.set(clawState);
-      rightPiston.set(clawState);
+      claw.set(clawState);
       wait(100, msec);
     } else {
       clawState = true;
-      leftPiston.set(clawState);
-      rightPiston.set(clawState);
+      claw.set(clawState);
       wait(100, msec);
     }
 }
@@ -321,6 +318,7 @@ void usercontrol(void) {
   // User control code here, inside the loop
   bool aPressed = false;
   bool bPressed = false;
+  Controller1.ButtonR1.pressed(frontClaw);
   while (1) {
     leftChassisSpin(Controller1.Axis3.value());
     rightChassisSpin(Controller1.Axis2.value());
@@ -328,7 +326,7 @@ void usercontrol(void) {
     
 
     //Claw
-    Controller1.ButtonR1.pressed(frontClaw);
+    
     
     if(Controller1.ButtonLeft.pressing()){
       backClawLeft.spin(reverse, 100, percent);

@@ -16,6 +16,7 @@ extern motor RightChassis1;
 extern motor RightChassis2;
 extern motor RightClamp;
 extern motor Intake;
+extern digital_out frontClaw;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

@@ -14,6 +14,42 @@
 // RightChassis2        motor         19              
 // RightClamp           motor         10              
 // Intake               motor         5               
+// frontClaw            digital_out   H               
+// ---- END VEXCODE CONFIGURED DEVICES ----
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Controller1          controller                    
+// Gyro                 inertial      15              
+// LeftChassis0         motor         1               
+// LeftClamp            motor         2               
+// RightChassis0        motor         9               
+// LeftChassis1         motor         12              
+// LeftArm              motor         13              
+// LeftChassis2         motor         14              
+// RightArm             motor         17              
+// RightChassis1        motor         18              
+// RightChassis2        motor         19              
+// RightClamp           motor         10              
+// Intake               motor         5               
+// frontClaw            digital_out   H               
+// ---- END VEXCODE CONFIGURED DEVICES ----
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Controller1          controller                    
+// Gyro                 inertial      15              
+// LeftChassis0         motor         1               
+// LeftClamp            motor         2               
+// RightChassis0        motor         9               
+// LeftChassis1         motor         12              
+// LeftArm              motor         13              
+// LeftChassis2         motor         14              
+// RightArm             motor         17              
+// RightChassis1        motor         18              
+// RightChassis2        motor         19              
+// RightClamp           motor         10              
+// Intake               motor         5               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 // ---- START VEXCODE CONFIGURED DEVICES ----
 // Robot Configuration:
@@ -72,7 +108,7 @@ intakeDirection intakeState = stopped;
 
 const int WHEEL_DIAMETER = 4;
 bool clawState;
-bool clawState2;
+//bool clawState2;
 // const float GEAR_DIAMETER = 3.5;
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -87,6 +123,14 @@ bool clawState2;
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
+  clawState = true;
+  frontClaw.set(clawState);
+
+  RightArm.setStopping(hold);
+  LeftArm.setStopping(hold);
+
+  LeftClamp.setStopping(hold);
+  RightClamp.setStopping(hold);
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
@@ -101,6 +145,10 @@ void pre_auton(void) {
 /*                                                                           */
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
+void frontGrab(bool frontClawState){
+  clawState = frontClawState;
+  frontClaw.set(frontClawState);
+}
 
 void drive (double dist) {
   double errorL = dist/WHEEL_DIAMETER*M_1_PI;
@@ -221,6 +269,18 @@ void rightDrive(double speed) {
   }
 }
 
+void claw(){
+  if(clawState){
+      clawState = false;
+      frontClaw.set(clawState);
+      wait(100, msec);
+    } else {
+      clawState = true;
+      frontClaw.set(clawState);
+      wait(100, msec);
+    }
+}
+
 void usercontrol(void) {
   // User control code here, inside the loop
 
@@ -228,7 +288,11 @@ void usercontrol(void) {
   Controller1.ButtonA.pressed(toggleIntake);
   Controller1.ButtonB.pressed(toggleOuttake);
 
+  Controller1.ButtonUp.pressed(claw);
+
   while (true) {
+    
+
     leftDrive(Controller1.Axis3.value());
     rightDrive(Controller1.Axis2.value());
 
@@ -239,8 +303,8 @@ void usercontrol(void) {
       LeftClamp.spin(reverse, 100, percent);
       RightClamp.spin(reverse, 100, percent);
     } else {
-      LeftClamp.stop(brake);
-      RightClamp.stop(brake);
+      LeftClamp.stop(hold);
+      RightClamp.stop(hold);
     }
 
     if (Controller1.ButtonR1.pressing()) {
@@ -250,9 +314,11 @@ void usercontrol(void) {
       LeftArm.spin(reverse, 100, percent);
       RightArm.spin(reverse, 100, percent);
     } else {
-      LeftArm.stop();
-      RightArm.stop();
+      LeftArm.stop(hold);
+      RightArm.stop(hold);
     }
+    //Brain.Screen.print("Butts");
+    
 
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
