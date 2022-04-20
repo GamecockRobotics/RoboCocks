@@ -1,108 +1,4 @@
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Controller1          controller                    
-// Gyro                 inertial      15              
-// LeftChassis0         motor         1               
-// LeftClamp            motor         2               
-// RightChassis0        motor         9               
-// LeftChassis1         motor         12              
-// LeftArm              motor         13              
-// LeftChassis2         motor         14              
-// RightArm             motor         17              
-// RightChassis1        motor         18              
-// RightChassis2        motor         19              
-// RightClamp           motor         10              
-// Intake               motor         5               
-// frontClaw            digital_out   H               
-// ---- END VEXCODE CONFIGURED DEVICES ----
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Controller1          controller                    
-// Gyro                 inertial      15              
-// LeftChassis0         motor         1               
-// LeftClamp            motor         2               
-// RightChassis0        motor         9               
-// LeftChassis1         motor         12              
-// LeftArm              motor         13              
-// LeftChassis2         motor         14              
-// RightArm             motor         17              
-// RightChassis1        motor         18              
-// RightChassis2        motor         19              
-// RightClamp           motor         10              
-// Intake               motor         5               
-// frontClaw            digital_out   H               
-// ---- END VEXCODE CONFIGURED DEVICES ----
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Controller1          controller                    
-// Gyro                 inertial      15              
-// LeftChassis0         motor         1               
-// LeftClamp            motor         2               
-// RightChassis0        motor         9               
-// LeftChassis1         motor         12              
-// LeftArm              motor         13              
-// LeftChassis2         motor         14              
-// RightArm             motor         17              
-// RightChassis1        motor         18              
-// RightChassis2        motor         19              
-// RightClamp           motor         10              
-// Intake               motor         5               
-// frontClaw            digital_out   H               
-// ---- END VEXCODE CONFIGURED DEVICES ----
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Controller1          controller                    
-// Gyro                 inertial      15              
-// LeftChassis0         motor         1               
-// LeftClamp            motor         2               
-// RightChassis0        motor         9               
-// LeftChassis1         motor         12              
-// LeftArm              motor         13              
-// LeftChassis2         motor         14              
-// RightArm             motor         17              
-// RightChassis1        motor         18              
-// RightChassis2        motor         19              
-// RightClamp           motor         10              
-// Intake               motor         5               
-// ---- END VEXCODE CONFIGURED DEVICES ----
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Controller1          controller                    
-// Gyro                 inertial      15              
-// LeftChassis0         motor         1               
-// LeftClamp            motor         2               
-// RightChassis0        motor         9               
-// LeftChassis1         motor         12              
-// LeftArm              motor         13              
-// LeftChassis2         motor         14              
-// RightArm             motor         17              
-// RightChassis1        motor         18              
-// RightChassis2        motor         19              
-// RightClamp           motor         10              
-// Intake               motor         5               
-// ---- END VEXCODE CONFIGURED DEVICES ----
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Controller1          controller                    
-// Gyro                 inertial      15              
-// LeftChassis0         motor         1               
-// LeftClamp            motor         2               
-// RightChassis0        motor         9               
-// LeftChassis1         motor         12              
-// LeftArm              motor         13              
-// LeftChassis2         motor         14              
-// RightArm             motor         17              
-// RightChassis1        motor         18              
-// RightChassis2        motor         19              
-// RightClamp           motor         10              
-// Intake               motor         5               
-// ---- END VEXCODE CONFIGURED DEVICES ----
+
 
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
@@ -125,10 +21,10 @@ enum intakeDirection { intake, outtake, stopped };
 intakeDirection intakeState = stopped;
 
 const double WHEEL_DIAMETER = 3.25;
-const double CHASSIS_GEAR_RATIO = 64.0/36.0;
+const double CHASSIS_GEAR_RATIO = 60.0 / 36.0;
 
 bool clawState;
-//bool clawState2;
+// bool clawState2;
 // const float GEAR_DIAMETER = 3.5;
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -165,29 +61,29 @@ void pre_auton(void) {
 /*                                                                           */
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
-void frontGrab(bool frontClawState){
+void frontGrab(bool frontClawState) {
   clawState = frontClawState;
   frontClaw.set(frontClawState);
 }
 
-void drive (double dist) {
-  double errorL = dist*M_1_PI/WHEEL_DIAMETER*CHASSIS_GEAR_RATIO*360;
-  double errorR = dist*M_1_PI/WHEEL_DIAMETER*CHASSIS_GEAR_RATIO*360;
+void drive(double dist) {
+  double errorL = dist * M_1_PI / WHEEL_DIAMETER * CHASSIS_GEAR_RATIO * 360;
+  double errorR = dist * M_1_PI / WHEEL_DIAMETER * CHASSIS_GEAR_RATIO * 360;
   double prevErrorL = errorL;
   double prevErrorR = errorR;
   double totalErrorL = 0;
   double totalErrorR = 0;
-  const double threshold = 2.0;
+  const double threshold = 10.0;
   const float kp = 0.05;
   const float kd = 0.012;
-  const float ki = 0.0001;
+  const float ki = 0.25;
   bool left = true;
   bool right = true;
   LeftChassis0.setRotation(0, degrees);
   RightChassis0.setRotation(0, degrees);
   while (left || right) {
-    int speedL = kp*errorL+kd*(prevErrorL-errorL) + ki*totalErrorL;
-    int speedR = kp*errorR+kd*(prevErrorR-errorR) + ki*totalErrorR;
+    int speedL = kp * errorL + kd * (prevErrorL - errorL) + ki * totalErrorL;
+    int speedR = kp * errorR + kd * (prevErrorR - errorR) + ki * totalErrorR;
     if (left) {
       LeftChassis0.spin(forward, speedL, percent);
       LeftChassis1.spin(forward, speedL, percent);
@@ -209,13 +105,22 @@ void drive (double dist) {
     wait(200, msec);
     prevErrorL = errorL;
     prevErrorR = errorR;
-    errorL = dist*M_1_PI/WHEEL_DIAMETER*CHASSIS_GEAR_RATIO*360 - LeftChassis0.rotation(degrees);
-    errorR = dist*M_1_PI/WHEEL_DIAMETER*CHASSIS_GEAR_RATIO*360 - RightChassis0.rotation(degrees);
+    errorL = dist * M_1_PI / WHEEL_DIAMETER * CHASSIS_GEAR_RATIO * 360 -
+             LeftChassis0.rotation(degrees);
+    errorR = dist * M_1_PI / WHEEL_DIAMETER * CHASSIS_GEAR_RATIO * 360 -
+             RightChassis0.rotation(degrees);
     totalErrorL = totalErrorL + ((fabs(errorL) < 10) ? errorL : 0);
     totalErrorR = totalErrorR + ((fabs(errorR) < 10) ? errorR : 0);
-    left = fabs(errorL) > threshold || fabs (prevErrorL) > threshold;
-    right = fabs(errorR) > threshold || fabs (prevErrorR) > threshold;
+    left = fabs(errorL) > threshold || fabs(prevErrorL) > threshold;
+    right = fabs(errorR) > threshold || fabs(prevErrorR) > threshold;
   }
+
+  LeftChassis0.stop(hold);
+  LeftChassis1.stop(hold);
+  LeftChassis2.stop(hold);
+  RightChassis0.stop(hold);
+  RightChassis1.stop(hold);
+  RightChassis2.stop(hold);
   Brain.Screen.print("done");
 }
 
@@ -223,13 +128,7 @@ void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
-  // LeftChassis0.spinFor(forward, 952, degrees, false);
-  // LeftChassis0.spinFor(forward, 952, degrees, false);
-  // LeftChassis0.spinFor(forward, 952, degrees, false);
-  // RightChassis0.spinFor(forward, 952, degrees, false);
-  // RightChassis0.spinFor(forward, 952, degrees, false);
-  // RightChassis0.spinFor(forward, 952, degrees, true);
-  drive(48);
+  drive(96);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -283,29 +182,27 @@ void rightDrive(double speed) {
   }
 }
 
-void claw(){
-  if(clawState){
-      clawState = false;
-      frontClaw.set(clawState);
-      wait(100, msec);
-    } else {
-      clawState = true;
-      frontClaw.set(clawState);
-      wait(100, msec);
-    }
+void claw() {
+  if (clawState) {
+    clawState = false;
+    frontClaw.set(clawState);
+    wait(100, msec);
+  } else {
+    clawState = true;
+    frontClaw.set(clawState);
+    wait(100, msec);
+  }
 }
 
 void usercontrol(void) {
   // User control code here, inside the loop
 
-  
   Controller1.ButtonA.pressed(toggleIntake);
   Controller1.ButtonB.pressed(toggleOuttake);
 
   Controller1.ButtonUp.pressed(claw);
 
   while (true) {
-    
 
     leftDrive(Controller1.Axis3.value());
     rightDrive(Controller1.Axis2.value());
@@ -331,8 +228,7 @@ void usercontrol(void) {
       LeftArm.stop(hold);
       RightArm.stop(hold);
     }
-    //Brain.Screen.print("Butts");
-    
+    // Brain.Screen.print("Butts");
 
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
