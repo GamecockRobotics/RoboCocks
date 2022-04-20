@@ -50,6 +50,24 @@
 // RightChassis2        motor         19              
 // RightClamp           motor         10              
 // Intake               motor         5               
+// frontClaw            digital_out   H               
+// ---- END VEXCODE CONFIGURED DEVICES ----
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Controller1          controller                    
+// Gyro                 inertial      15              
+// LeftChassis0         motor         1               
+// LeftClamp            motor         2               
+// RightChassis0        motor         9               
+// LeftChassis1         motor         12              
+// LeftArm              motor         13              
+// LeftChassis2         motor         14              
+// RightArm             motor         17              
+// RightChassis1        motor         18              
+// RightChassis2        motor         19              
+// RightClamp           motor         10              
+// Intake               motor         5               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 // ---- START VEXCODE CONFIGURED DEVICES ----
 // Robot Configuration:
@@ -106,7 +124,9 @@ competition Competition;
 enum intakeDirection { intake, outtake, stopped };
 intakeDirection intakeState = stopped;
 
-const int WHEEL_DIAMETER = 4;
+const double WHEEL_DIAMETER = 3.25;
+const double CHASSIS_GEAR_RATIO = 64.0/36.0;
+
 bool clawState;
 //bool clawState2;
 // const float GEAR_DIAMETER = 3.5;
@@ -151,30 +171,23 @@ void frontGrab(bool frontClawState){
 }
 
 void drive (double dist) {
-  double errorL = dist/WHEEL_DIAMETER*M_1_PI;
-  double errorR = dist/WHEEL_DIAMETER*M_1_PI;
-  double errorA = 0;
+  double errorL = dist*M_1_PI/WHEEL_DIAMETER*CHASSIS_GEAR_RATIO*360;
+  double errorR = dist*M_1_PI/WHEEL_DIAMETER*CHASSIS_GEAR_RATIO*360;
   double prevErrorL = errorL;
   double prevErrorR = errorR;
-  double prevErrorA = 0;
   double totalErrorL = 0;
   double totalErrorR = 0;
-  double totalErrorA = 0;
   const double threshold = 2.0;
-  const float kp = 0.50;
-  const float kd = 0.12;
-  const float ki = 0.01;
-  const float kpa = 0.05;
-  const float kda = 0.01;
-  const float kia = 0.001;
+  const float kp = 0.05;
+  const float kd = 0.012;
+  const float ki = 0.0001;
   bool left = true;
   bool right = true;
-  bool straight = true;
   LeftChassis0.setRotation(0, degrees);
   RightChassis0.setRotation(0, degrees);
-  while (left || right || !straight) {
-    int speedL = kp*errorL+kd*(prevErrorL-errorL) + ki*totalErrorL;// - (kpa*errorA + kda*(prevErrorA-errorA) +kia*totalErrorA);
-    int speedR = kp*errorR+kd*(prevErrorR-errorR) + ki*totalErrorR;// + (kpa*errorA + kda*(prevErrorA-errorA) +kia*totalErrorA);
+  while (left || right) {
+    int speedL = kp*errorL+kd*(prevErrorL-errorL) + ki*totalErrorL;
+    int speedR = kp*errorR+kd*(prevErrorR-errorR) + ki*totalErrorR;
     if (left) {
       LeftChassis0.spin(forward, speedL, percent);
       LeftChassis1.spin(forward, speedL, percent);
@@ -196,26 +209,27 @@ void drive (double dist) {
     wait(200, msec);
     prevErrorL = errorL;
     prevErrorR = errorR;
-    prevErrorA = errorA;
-    errorL = dist/WHEEL_DIAMETER*M_1_PI - LeftChassis0.rotation(degrees);
-    errorR = dist/WHEEL_DIAMETER*M_1_PI - RightChassis0.rotation(degrees);
-    errorA = fabs(Gyro.heading()) > 3 ? Gyro.heading() : 0;
-    if (fabs(errorL) < 10) {
-      totalErrorL = totalErrorL + errorL;
-    }
-    if (fabs(errorR) < 10) {
-      totalErrorR = totalErrorR + errorR;
-    }
-    totalErrorA = totalErrorA + errorA;
+    errorL = dist*M_1_PI/WHEEL_DIAMETER*CHASSIS_GEAR_RATIO*360 - LeftChassis0.rotation(degrees);
+    errorR = dist*M_1_PI/WHEEL_DIAMETER*CHASSIS_GEAR_RATIO*360 - RightChassis0.rotation(degrees);
+    totalErrorL = totalErrorL + ((fabs(errorL) < 10) ? errorL : 0);
+    totalErrorR = totalErrorR + ((fabs(errorR) < 10) ? errorR : 0);
     left = fabs(errorL) > threshold || fabs (prevErrorL) > threshold;
     right = fabs(errorR) > threshold || fabs (prevErrorR) > threshold;
   }
+  Brain.Screen.print("done");
 }
 
 void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
+  // LeftChassis0.spinFor(forward, 952, degrees, false);
+  // LeftChassis0.spinFor(forward, 952, degrees, false);
+  // LeftChassis0.spinFor(forward, 952, degrees, false);
+  // RightChassis0.spinFor(forward, 952, degrees, false);
+  // RightChassis0.spinFor(forward, 952, degrees, false);
+  // RightChassis0.spinFor(forward, 952, degrees, true);
+  drive(48);
 }
 
 /*---------------------------------------------------------------------------*/
