@@ -44,8 +44,8 @@ const double kpNoMiddle = 0.50;
 const double kdNoMiddle = 0.12;
 const double kiNoMiddle = 0.00;
 const double kpMiddle = 0.40;
-const double kdMiddle = 0.12;
-const double kiMiddle = 0.00;
+const double kdMiddle = 0.15;
+const double kiMiddle = 0.001;
 
 bool clawState;
 bool clawState2;
@@ -68,7 +68,6 @@ void pre_auton(void) {
   // Example: clearing encoders, setting servo positions, ...
   clawState = false;
   clawState2 = false;
-  // clawState2 = true;
   claw.set(clawState);
   driveFrontLeft.setVelocity(100, percent);
   driveMiddleLeft.setVelocity(100, percent);
@@ -141,10 +140,10 @@ void drive(double dist) {
   double prevErrorR = errorR;
   double totalErrorL = 0;
   double totalErrorR = 0;
-  const double threshold = 16.0;
-  const float kp = 0.05;
-  const float kd = 0.15;
-  const float ki = 0.0001;
+  const double threshold = 12.0;
+  const float kp = 0.085;
+  const float kd = 0.12;
+  const float ki = 0.0003;
   bool left = true;
   bool right = true;
   driveBackLeft.setRotation(0, degrees);
@@ -181,12 +180,12 @@ void drive(double dist) {
     totalErrorR = totalErrorR + ((fabs(errorR) < 10) ? errorR : 0);
     left = fabs(errorL) > threshold || fabs(prevErrorL) > threshold;
     right = fabs(errorR) > threshold || fabs(prevErrorR) > threshold;
-    Brain.Screen.print(errorL);
-    Brain.Screen.newLine();
-    Brain.Screen.print(errorR);
+    // Brain.Screen.print(errorL);
+    // Brain.Screen.newLine();
+    // Brain.Screen.print(errorR);
     
   }
-  Brain.Screen.print("Im OUTTTTTTTTTTTTTTTTTTTTTTTTT");
+  //Brain.Screen.print("Im OUTTTTTTTTTTTTTTTTTTTTTTTTT");
   driveFrontRight.stop();
   driveMiddleRight.stop();
   driveBackRight.stop();
@@ -199,7 +198,7 @@ void chassisTurn(double deg, turnType dir, const double tkp, const double tkd, c
   float error = deg;
   float prevError = deg;
   float totalError = 0;
-  const float threshold = 2.0;
+  const float threshold = 3.0;
   const float kp = tkp; // 0.5
   const float kd = tkd; // 0.12
   const float ki = tki;
@@ -218,8 +217,10 @@ void chassisTurn(double deg, turnType dir, const double tkp, const double tkd, c
     if (fabs(error) < 10) {
       totalError = totalError + error;
     }
+    Brain.Screen.print(error);
+    Brain.Screen.newLine();
   }
-
+  Brain.Screen.print("Im OUTTTTTTTTTTTTTTTTTTTTTTTTT");
   driveFrontRight.stop();
   driveMiddleRight.stop();
   driveBackRight.stop();
@@ -255,24 +256,29 @@ void autonomous(void) {
   drive(72);
   frontClaw();
   lift(3);
-  drive(-44);
-  lift(-3, true);
+  drive(-48);
+  //lift(-3, true);
+  //frontClaw();
+  //lift(1);
+  
   chassisTurn(45, left, kpMiddle, kdMiddle, kiMiddle);
+  lift(-1, true);
+  
   driveForward(-10);
   backClaw(); //Test function
   drive(5);
-  chassisTurn(90, left, kpMiddle, kdMiddle, kiMiddle);
-  driveForward(10);
-  setMotorSpeed(30);
-  lift(5,true);
-  Intake.spin(forward, 80, percent);
-  // for(int i = 0; i < 3; i++){
-    drive(-12);
-    wait(100, msec);
-    drive(12);
+  // chassisTurn(90, left, kpMiddle, kdMiddle, kiMiddle);
+  // driveForward(10);
+  // setMotorSpeed(30);
+  // lift(5,true);
+  // Intake.spin(forward, 80, percent);
+  // // for(int i = 0; i < 3; i++){
+  //   drive(-12);
+  //   wait(100, msec);
+  //   drive(12);
   // }
-  Intake.stop(coast);
-  setMotorSpeed(100);
+  // Intake.stop(coast);
+  // setMotorSpeed(100);
 
 
 }
