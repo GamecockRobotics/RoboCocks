@@ -40,8 +40,15 @@ intakeDirection intakeState = stopped;
 
 const double WHEEL_DIAMETER = 4.0;
 const double CHASSIS_GEAR_RATIO = 60.0 / 84.0;
+const double kpNoMiddle = 0.50;
+const double kdNoMiddle = 0.12;
+const double kiNoMiddle = 0.00;
+const double kpMiddle = 0.40;
+const double kdMiddle = 0.12;
+const double kiMiddle = 0.00;
+
 bool clawState;
-// bool clawState2;
+bool clawState2;
 // const float GEAR_DIAMETER = 3.5;
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -60,6 +67,7 @@ void pre_auton(void) {
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
   clawState = false;
+  clawState2 = false;
   // clawState2 = true;
   claw.set(clawState);
   driveFrontLeft.setVelocity(100, percent);
@@ -90,27 +98,33 @@ void driveForward(int dist, bool waiting = true) {
   driveBackRight.spinFor(dist * M_1_PI / WHEEL_DIAMETER * CHASSIS_GEAR_RATIO * 360, degrees, waiting);
 }
 
-void TurnLeft(float dist) {
-  driveFrontLeft.spinFor(-dist / WHEEL_DIAMETER * M_1_PI, turns, false);
-  driveMiddleLeft.spinFor(-dist / WHEEL_DIAMETER * M_1_PI, turns, false);
-  driveBackLeft.spinFor(-dist / WHEEL_DIAMETER * M_1_PI, turns, false);
-  driveFrontRight.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
-  driveMiddleRight.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
-  driveBackRight.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
+void frontClaw() {
+  if (clawState) {
+    clawState = false;
+    claw.set(clawState);
+    wait(100, msec);
+  } else {
+    clawState = true;
+    claw.set(clawState);
+    wait(100, msec);
+  }
 }
 
-void TurnRight(float dist) {
-  driveFrontLeft.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
-  driveMiddleLeft.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
-  driveBackLeft.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
-  driveFrontRight.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
-  driveMiddleRight.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
-  driveBackRight.spinFor(dist / WHEEL_DIAMETER * M_1_PI, turns, false);
-}
+void backClaw(){
+  if (clawState2) {
+    clawState2 = false;
+    backClawLeft.spinFor(-800, degrees);
+    backClawRight.spinFor(-800,degrees);
+    wait(100, msec);
+  } else {
+    clawState2 = true;
+    backClawLeft.spinFor(800, degrees);
+    backClawRight.spinFor(800,degrees);
+    wait(100, msec);
+    Brain.Screen.clearScreen();
+    Brain.Screen.print("Finished Claw");
+  }
 
-void frontGrab(bool frontClawState) {
-  clawState = frontClawState;
-  claw.set(frontClawState);
 }
 
 void lift(float ang, bool waiting = false) {
@@ -121,13 +135,13 @@ void lift(float ang, bool waiting = false) {
 void drive(double dist) {
   double errorL = dist * M_1_PI / WHEEL_DIAMETER * CHASSIS_GEAR_RATIO * 345;
   double errorR = dist * M_1_PI / WHEEL_DIAMETER * CHASSIS_GEAR_RATIO * 345;
-  Brain.Screen.print(errorL);
-  Brain.Screen.newLine();
+  // Brain.Screen.print(errorL);
+  // Brain.Screen.newLine();
   double prevErrorL = errorL;
   double prevErrorR = errorR;
   double totalErrorL = 0;
   double totalErrorR = 0;
-  const double threshold = 10.0;
+  const double threshold = 16.0;
   const float kp = 0.05;
   const float kd = 0.15;
   const float ki = 0.0001;
@@ -169,8 +183,10 @@ void drive(double dist) {
     right = fabs(errorR) > threshold || fabs(prevErrorR) > threshold;
     Brain.Screen.print(errorL);
     Brain.Screen.newLine();
+    Brain.Screen.print(errorR);
     
   }
+  Brain.Screen.print("Im OUTTTTTTTTTTTTTTTTTTTTTTTTT");
   driveFrontRight.stop();
   driveMiddleRight.stop();
   driveBackRight.stop();
@@ -179,14 +195,14 @@ void drive(double dist) {
   driveBackLeft.stop();
 }
 
-void chassisTurn(double deg, turnType dir) {
+void chassisTurn(double deg, turnType dir, const double tkp, const double tkd, const double tki) {
   float error = deg;
   float prevError = deg;
   float totalError = 0;
   const float threshold = 2.0;
-  const float kp = 0.50; // 0.5
-  const float kd = 0.12; // 0.12
-  const float ki = 0.00;
+  const float kp = tkp; // 0.5
+  const float kd = tkd; // 0.12
+  const float ki = tki;
   Gyro.setRotation(0, degrees);
   while (fabs(error) > threshold || fabs(prevError) > threshold) {
     int speed = kp * error + kd * (prevError - error) + ki * totalError;
@@ -212,7 +228,7 @@ void chassisTurn(double deg, turnType dir) {
   driveBackLeft.stop();
 }
 
-void setMotorSpeed(float s) {
+void setMotorSpeed(int s) {
   driveFrontLeft.setVelocity(s, percent);
   driveMiddleLeft.setVelocity(s, percent);
   driveBackLeft.setVelocity(s, percent);
@@ -235,10 +251,30 @@ void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
-  // chassisTurn(90,right);
-  drive(48);
-  lift(3, true);
-  lift(-3);
+  
+  drive(72);
+  frontClaw();
+  lift(3);
+  drive(-44);
+  lift(-3, true);
+  chassisTurn(45, left, kpMiddle, kdMiddle, kiMiddle);
+  driveForward(-10);
+  backClaw(); //Test function
+  drive(5);
+  chassisTurn(90, left, kpMiddle, kdMiddle, kiMiddle);
+  driveForward(10);
+  setMotorSpeed(30);
+  lift(5,true);
+  Intake.spin(forward, 80, percent);
+  // for(int i = 0; i < 3; i++){
+    drive(-12);
+    wait(100, msec);
+    drive(12);
+  // }
+  Intake.stop(coast);
+  setMotorSpeed(100);
+
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -253,7 +289,7 @@ void autonomous(void) {
 void toggleIntake() {
   intakeState = (intakeState == intake ? stopped : intake);
   if (intakeState == intake) {
-    Intake.spin(forward, 100, percent);
+    Intake.spin(forward, 80, percent);
   } else {
     Intake.stop(coast);
   }
@@ -264,19 +300,6 @@ void toggleOuttake() {
     Intake.spin(reverse, 100, percent);
   } else {
     Intake.stop(coast);
-  }
-}
-void backClaw() {}
-
-void frontClaw() {
-  if (clawState) {
-    clawState = false;
-    claw.set(clawState);
-    wait(100, msec);
-  } else {
-    clawState = true;
-    claw.set(clawState);
-    wait(100, msec);
   }
 }
 
@@ -315,7 +338,6 @@ void usercontrol(void) {
     rightChassisSpin(Controller1.Axis2.value());
 
     // Claw
-
     if (Controller1.ButtonLeft.pressing()) {
       backClawLeft.spin(reverse, 100, percent);
       backClawRight.spin(reverse, 100, percent);
