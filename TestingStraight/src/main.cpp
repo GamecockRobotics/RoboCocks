@@ -10,21 +10,21 @@
 // ---- START VEXCODE CONFIGURED DEVICES ----
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
-// Controller1          controller                    
-// driveFrontLeft       motor         16              
-// driveMiddleLeft      motor         18              
-// driveBackLeft        motor         19              
-// driveFrontRight      motor         2               
-// driveMiddleRight     motor         10              
-// driveBackRight       motor         5               
-// Gyro                 inertial      9               
-// backClawLeft         motor         17              
-// backClawRight        motor         8               
-// frontLiftRight       motor         4               
-// frontLiftLeft        motor         15              
-// Intake               motor         1               
-// claw                 digital_out   H               
-// rightPiston          digital_out   B               
+// Controller1          controller
+// driveFrontLeft       motor         16
+// driveMiddleLeft      motor         18
+// driveBackLeft        motor         19
+// driveFrontRight      motor         2
+// driveMiddleRight     motor         7
+// driveBackRight       motor         5
+// Gyro                 inertial      9
+// backClawLeft         motor         17
+// backClawRight        motor         8
+// frontLiftRight       motor         4
+// frontLiftLeft        motor         15
+// Intake               motor         1
+// claw                 digital_out   H
+// rightPiston          digital_out   B
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -178,18 +178,18 @@ void drive(double dist) {
       driveMiddleLeft.spin(forward, speedL, percent);
       driveFrontLeft.spin(forward, speedL, percent);
     } else {
-      driveBackLeft.stop(hold);
-      driveMiddleLeft.stop(hold);
-      driveFrontLeft.stop(hold);
+      driveBackLeft.stop(coast);
+      driveMiddleLeft.stop(coast);
+      driveFrontLeft.stop(coast);
     }
     if (right) {
       driveBackRight.spin(forward, speedR, percent);
       driveMiddleRight.spin(forward, speedR, percent);
       driveFrontRight.spin(forward, speedR, percent);
     } else {
-      driveBackRight.stop(hold);
-      driveMiddleRight.stop(hold);
-      driveFrontRight.stop(hold);
+      driveBackRight.stop(coast);
+      driveMiddleRight.stop(coast);
+      driveFrontRight.stop(coast);
     }
     wait(200, msec);
     prevErrorL = errorL;
@@ -207,12 +207,12 @@ void drive(double dist) {
     // Brain.Screen.print(errorR);
   }
   // Brain.Screen.print("Im OUTTTTTTTTTTTTTTTTTTTTTTTTT");
-  driveFrontRight.stop();
-  driveMiddleRight.stop();
-  driveBackRight.stop();
-  driveFrontLeft.stop();
-  driveMiddleLeft.stop();
-  driveBackLeft.stop();
+  driveFrontRight.stop(coast);
+  driveMiddleRight.stop(coast);
+  driveBackRight.stop(coast);
+  driveFrontLeft.stop(coast);
+  driveMiddleLeft.stop(coast);
+  driveBackLeft.stop(coast);
 }
 
 void chassisTurn(double deg, turnType dir, const double tkp, const double tkd,
@@ -276,38 +276,10 @@ void autonomous(void) {
   // Insert autonomous user code here.
   // ..........................................................................
 
-  drive(72);
-  frontClaw();
-  lift(3);
-  wait(500,msec);
-  drive(-45);
-
-  chassisTurn(45, left, kpMiddle, kdMiddle, kiMiddle);
-  lift(-1, true);
-
-  setMotorSpeed(20);
-  driveForward(-11);
-  wait(1000,msec);
-  backClaw(); 
+  drive(48);
+  wait(5000, msec);
+  drive(-48);
   
-  drive(5);
-  lift(1,true);
-  chassisTurn(85, left, kpMiddle, kdMiddle, kiMiddle);
-  lift(7, true);
-  setMotorSpeed(30);
-  wait(100,msec);
-  driveForward(20);
-  
-  Intake.spin(forward, 80, percent);
-  for (int i = 0; i < 100; i++) {
-    drive(-20);
-    //lift(-5, true);
-    wait(1000, msec);
-    //lift(9, true);
-    drive(20);
-  }
-  Intake.stop(coast);
-  setMotorSpeed(100);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -373,7 +345,7 @@ void usercontrol(void) {
     if (Controller1.ButtonUp.pressing()) {
       frontLiftRight.spin(forward, speed, percent);
       frontLiftLeft.spin(forward, speed, percent);
-    } else if (Controller1.ButtonDown.pressing()) {
+    } else if (Controller1.ButtonLeft.pressing()) {
       frontLiftRight.spin(reverse, speed, percent);
       frontLiftLeft.spin(reverse, speed, percent);
     } else {

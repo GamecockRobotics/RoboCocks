@@ -79,9 +79,6 @@ void pre_auton(void) {
   backClawLeft.setVelocity(100, percent);
   backClawRight.setVelocity(100, percent);
 
-  backClawLeft.setStopping(hold);
-  backClawRight.setStopping(hold);
-
   driveFrontLeft.setStopping(coast);
   driveMiddleLeft.setStopping(coast);
   driveBackLeft.setStopping(coast);
@@ -127,24 +124,16 @@ void frontClaw() {
 void backClaw() {
   if (clawState2) {
     clawState2 = false;
-    backClawLeft.spin(reverse, 100, percent);
-    backClawRight.spin(reverse, 100, percent);
-    wait(1000, msec);
-    backClawLeft.stop(hold);
-    backClawRight.stop(hold);
-    Brain.Screen.print("Finished Claw");
+    backClawLeft.spinFor(-800, degrees);
+    backClawRight.spinFor(-800, degrees);
     wait(100, msec);
-    // Brain.Screen.clearScreen();
   } else {
     clawState2 = true;
-    backClawLeft.spin(forward, 100, percent);
-    backClawRight.spin(forward, 100, percent);
-    wait(1500, msec);
-    backClawLeft.stop(hold);
-    backClawRight.stop(hold);
-    Brain.Screen.print("Finished Claw");
+    backClawLeft.spinFor(800, degrees);
+    backClawRight.spinFor(800, degrees);
     wait(100, msec);
-    // Brain.Screen.clearScreen();
+    Brain.Screen.clearScreen();
+    Brain.Screen.print("Finished Claw");
   }
 }
 
@@ -242,7 +231,6 @@ void chassisTurn(double deg, turnType dir, const double tkp, const double tkd,
     Brain.Screen.print(error);
     Brain.Screen.newLine();
   }
-  Brain.Screen.clearScreen();
   Brain.Screen.print("Im OUTTTTTTTTTTTTTTTTTTTTTTTTT");
   driveFrontRight.stop();
   driveMiddleRight.stop();
@@ -256,6 +244,16 @@ void setMotorSpeed(int s) {
   driveFrontLeft.setVelocity(s, percent);
   driveMiddleLeft.setVelocity(s, percent);
   driveBackLeft.setVelocity(s, percent);
+  driveFrontRight.setVelocity(s, percent);
+  driveMiddleRight.setVelocity(s, percent);
+  driveBackRight.setVelocity(s, percent);
+}
+void setMotorSpeedLeft(int s) {
+  driveFrontLeft.setVelocity(s, percent);
+  driveMiddleLeft.setVelocity(s, percent);
+  driveBackLeft.setVelocity(s, percent);
+}
+void setMotorSpeedRight(int s) {
   driveFrontRight.setVelocity(s, percent);
   driveMiddleRight.setVelocity(s, percent);
   driveBackRight.setVelocity(s, percent);
@@ -276,38 +274,15 @@ void autonomous(void) {
   // Insert autonomous user code here.
   // ..........................................................................
 
-  drive(72);
+  driveForward(34);
   frontClaw();
+  //wait(10, msec);
   lift(3);
-  wait(500,msec);
-  drive(-45);
-
-  chassisTurn(45, left, kpMiddle, kdMiddle, kiMiddle);
-  lift(-1, true);
-
-  setMotorSpeed(20);
-  driveForward(-11);
-  wait(1000,msec);
-  backClaw(); 
-  
-  drive(5);
-  lift(1,true);
-  chassisTurn(85, left, kpMiddle, kdMiddle, kiMiddle);
-  lift(7, true);
-  setMotorSpeed(30);
-  wait(100,msec);
-  driveForward(20);
-  
-  Intake.spin(forward, 80, percent);
-  for (int i = 0; i < 100; i++) {
-    drive(-20);
-    //lift(-5, true);
-    wait(1000, msec);
-    //lift(9, true);
-    drive(20);
-  }
-  Intake.stop(coast);
-  setMotorSpeed(100);
+  //setMotorSpeedLeft(80);
+  wait(10,msec);
+  //setMotorSpeedRight(100);
+  driveForward(-60);
+ 
 }
 
 /*---------------------------------------------------------------------------*/
