@@ -66,6 +66,31 @@ void frontGrab(bool frontClawState) {
   frontClaw.set(frontClawState);
 }
 
+void turn(turnType dir, double deg) {
+  float error = deg;
+  float prevError = deg;
+  float totalError = 0;
+  const float threshold = 2.0;
+  const float kp = 0.50;
+  const float kd = 0.12;
+  const float ki = 0.01;
+  Gyro.setRotation(0, degrees);
+  while (fabs(error) > threshold || fabs(prevError) > threshold) {
+    int speed = kp * error + kd * (prevError - error) + ki * totalError;
+    LeftChassis0.spin(dir == left ? reverse : forward, speed, percent);
+    LeftChassis1.spin(dir == left ? reverse : forward, speed, percent);
+    LeftChassis2.spin(dir == left ? reverse : forward, speed, percent);
+    RightChassis0.spin(dir == right ? reverse : forward, speed, percent);
+    RightChassis1.spin(dir == right ? reverse : forward, speed, percent);
+    RightChassis2.spin(dir == right ? reverse : forward, speed, percent);
+    wait(200, msec);
+    prevError = error;
+    error = deg - fabs(Gyro.rotation());
+
+    totalError = totalError + (fabs(error) < 10 ? error : 0);
+  }
+}
+
 void drive(double dist) {
   double errorL = dist * M_1_PI / WHEEL_DIAMETER * CHASSIS_GEAR_RATIO * 360;
   double errorR = dist * M_1_PI / WHEEL_DIAMETER * CHASSIS_GEAR_RATIO * 360;
@@ -121,14 +146,21 @@ void drive(double dist) {
   RightChassis0.stop(hold);
   RightChassis1.stop(hold);
   RightChassis2.stop(hold);
-  Brain.Screen.print("done");
+}
+
+void claw() {
+  clawState = !clawState;
+  frontClaw.set(clawState);
 }
 
 void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
-  drive(96);
+  drive(44.5);
+  claw();
+  drive(-30);
+  turn(right, 90);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -158,40 +190,45 @@ void toggleOuttake() {
   }
 }
 
-void leftDrive(double speed) {
-  if (fabs(speed) > 5) {
-    LeftChassis0.spin(forward, speed, percent);
-    LeftChassis1.spin(forward, speed, percent);
-    LeftChassis2.spin(forward, speed, percent);
-  } else {
-    LeftChassis0.stop(coast);
-    LeftChassis1.stop(coast);
-    LeftChassis2.stop(coast);
-  }
-}
+int leftTarget = 0; 
+int rightTarget = 0;
 
-void rightDrive(double speed) {
-  if (fabs(speed) > 5) {
-    RightChassis0.spin(forward, speed, percent);
-    RightChassis1.spin(forward, speed, percent);
-    RightChassis2.spin(forward, speed, percent);
-  } else {
-    RightChassis0.stop(coast);
-    RightChassis1.stop(coast);
-    RightChassis2.stop(coast);
+int driveChassis() {
+  double kp = 0.6, kd = 0.24, ki = 0.0;
+  double rightP = 0, leftP = 0, rightD = 0, leftD = 0, rightI = 0, leftI = 0;
+  double prevRightSpeed = 0, prevLeftSpeed = 0, rightSpeed = 0, leftSpeed = 0;
+  while (true) {
+    rightI += ki*rightP/kp;
+    rightP = kp*(rightTarget-rightSpeed);
+    rightD = kd*(prevRightSpeed-rightSpeed);
+    prevRightSpeed = rightSpeed;
+    leftI += ki*rightP/kp;
+    leftP = kp*(leftTarget-leftSpeed);
+    leftD = kd*(prevLeftSpeed-leftSpeed);
+    prevLeftSpeed = leftSpeed;
+    if (rightSpeed != rightTarget) {
+      if ((rightP + rightI + rightD) > 0 && rightSpeed < -50) {
+        Brain.Screen.print(rightP);
+        Brain.Screen.print(" ");
+        Brain.Screen.print(rightI);
+        Brain.Screen.print(" ");
+        Brain.Screen.print(rightD);
+        Brain.Screen.newLine();
+      }
+      rightSpeed += rightP + rightI + rightD;
+    }
+    if (leftSpeed != leftTarget) {
+      leftSpeed += leftP + leftI + leftD;
+    }
+    RightChassis0.spin(forward, rightSpeed, percent);
+    RightChassis1.spin(forward, rightSpeed, percent);
+    RightChassis2.spin(forward, rightSpeed, percent);
+    LeftChassis0.spin(forward, leftSpeed, percent);
+    LeftChassis1.spin(forward, leftSpeed, percent);
+    LeftChassis2.spin(forward, leftSpeed, percent);
+    wait(10, msec);
   }
-}
-
-void claw() {
-  if (clawState) {
-    clawState = false;
-    frontClaw.set(clawState);
-    wait(100, msec);
-  } else {
-    clawState = true;
-    frontClaw.set(clawState);
-    wait(100, msec);
-  }
+  return 0;
 }
 
 void usercontrol(void) {
@@ -199,13 +236,12 @@ void usercontrol(void) {
 
   Controller1.ButtonA.pressed(toggleIntake);
   Controller1.ButtonB.pressed(toggleOuttake);
-
   Controller1.ButtonUp.pressed(claw);
-
+  task driveTask(driveChassis);
   while (true) {
 
-    leftDrive(Controller1.Axis3.value());
-    rightDrive(Controller1.Axis2.value());
+    leftTarget = abs(Controller1.Axis3.value()) > 5  ? Controller1.Axis3.value():0;
+    rightTarget = abs(Controller1.Axis2.value()) > 5 ? Controller1.Axis2.value():0;
 
     if (Controller1.ButtonL1.pressing()) {
       LeftClamp.spin(forward, 100, percent);
@@ -228,7 +264,6 @@ void usercontrol(void) {
       LeftArm.stop(hold);
       RightArm.stop(hold);
     }
-    // Brain.Screen.print("Butts");
 
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
@@ -246,6 +281,8 @@ int main() {
 
   // Prevent main from exiting with an infinite loop.
   while (true) {
+    leftTarget = abs(Controller1.Axis3.value()) > 5  ? Controller1.Axis3.value():0;
+    rightTarget = abs(Controller1.Axis2.value()) > 5 ? Controller1.Axis2.value():0;
     wait(100, msec);
   }
 }
